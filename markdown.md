@@ -81,7 +81,7 @@ _ _ _
 
 > 创建脚注格式类似这样[^脚注]。
 
-> [^脚注]: Markdown脚注添加
+[^脚注]: Markdown脚注添加
 
 ## Markdown列表
 
@@ -175,6 +175,7 @@ Markdown支持行内式和参考式两种链接语法。
 ## Markdown图片
 
 Markdown图片语法，开头一个感叹号!，接着一个方括号包裹代替文字，接着一个圆括号包裹着图片地址。
+
 ![gitee](https://portrait.gitee.com/uploads/avatars/user/306/920508_zhudingsuifeng_1644377386.png!avatar60 "可选标题")
 
 ## Markdown表格
