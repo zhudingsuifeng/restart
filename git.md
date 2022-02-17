@@ -6,6 +6,19 @@
 
 ### git教程
 
+git init
+git add
+git commit 
+git push
+git pull
+git remote
+git banch
+git config
+git -T
+git merge
+git fetch
+git 
+
 git安装配置
 git工作流程
 git工作区、暂存区和版本库
@@ -34,6 +47,10 @@ git config --global user.email "your_email@example.com"
 git config --list  # 查看当前git环境所有配置
 ```
 
+### https
+
+
+
 ### ssh key
 
 生成ssh key并在github配置公钥．
@@ -59,10 +76,20 @@ The default branch has been renamed!
 
 if you have a local clone, you can update it by running the following commands.
 
+Settings->Repositories->Repository default branch->(master) Update
 
 ```git
 git clone /path/to/repository      # 创建本地仓库克隆版本
 git clone git@github.com:zhudingsuifeng/restart.git     # 创建远程仓库克隆版本
+
+
+echo "# test" >> README.md
+git init
+git add READMD.md
+git commit -m "first commit"
+git branch -M master
+git remote add github https://github.com/zhudingsuifeng/test.git
+git push -u github master
 ```
 
 #### 工作流
@@ -174,6 +201,5 @@ $ git push origin master
 仓库镜像管理功能用于配置和管理仓库镜像，可以实现不同平台之间仓库分支，标签和提交信息的自动同步．
 
 Push镜像用于将Gitee的仓库自动镜像到GitHub.Pull镜像用于将GitHub的仓库镜像到Gitee.
-
 
 gitee仓库镜像管理的功能不是自动开通的，需要申请，符合要求的GVP项目或推荐项目才能开通此功能．
