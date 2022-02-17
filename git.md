@@ -4,6 +4,32 @@
 
 图片可以上传到gitee
 
+#### 入门
+
+使用git前，需要先建立一个仓库(repository)。
+
+使用当前目录作为git本地仓库，需要先初始化。
+
+```git
+git init                # 初始化本地仓库
+git init new            # 将指定目录new初始化为本地仓库
+git add filename        # 添加新文件到暂存区
+git commit -m "add file"   # 提交版本
+git commit -a -m "changed some files"
+# 将所有被修改或者已删除的且已经被git管理的文档提交到本地仓库。-a不会造成新文件被提交。
+```
+
+删除
+
+git rm file
+```git
+git branch test     # 创建新的本地分支
+git checkout test   # 更改当前分支到test
+git merge test      # 合并当前分支与test分支
+git branch -d test  # 删除test分支
+```
+
+
 ### git教程
 
 git init
@@ -59,7 +85,9 @@ git config --list  # 查看当前git环境所有配置
 
 复制~/.ssh/id_ed25519.pub内容到github中，setting->SSH and GPG keys．
 
-ssh -T git@github.com  测试是否成功配置ssh key.
+```ssh
+ssh -T git@github.com   # 测试是否成功配置ssh key.
+```
 
 之前已经是https链接，想要使用ssh提交，需要修改项目目录下.git文件夹下的config文件，将地址修改为ssh地址．
 
@@ -198,8 +226,6 @@ $ git push origin master
 
 #### gitee仓库镜像管理(Gitee<->Github双向同步)
 
-仓库镜像管理功能用于配置和管理仓库镜像，可以实现不同平台之间仓库分支，标签和提交信息的自动同步．
-
-Push镜像用于将Gitee的仓库自动镜像到GitHub.Pull镜像用于将GitHub的仓库镜像到Gitee.
-
-gitee仓库镜像管理的功能不是自动开通的，需要申请，符合要求的GVP项目或推荐项目才能开通此功能．
+> 仓库镜像管理功能用于配置和管理仓库镜像，可以实现不同平台之间仓库分支，标签和提交信息的自动同步．
+> Push镜像用于将Gitee的仓库自动镜像到GitHub.Pull镜像用于将GitHub的仓库镜像到Gitee.
+> gitee仓库镜像管理的功能不是自动开通的，需要申请，符合要求的GVP项目或推荐项目才能开通此功能．
