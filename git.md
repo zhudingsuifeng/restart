@@ -148,38 +148,85 @@ ssh -T git@github.com   # 测试是否成功配置ssh key.
 
 github创建repository存储库的时候，最好创建一个空的，license也不要选，不然与gitee混用推送有可能不成功。
 
-总是显示远端branch超出local branch
+目前(20220219)，git原生命令并不能在本地命令行直接创建github远程仓库，所以需要先创建github远程仓库．
 
-The default branch has been renamed!
+**github提供了api，可以通过执行编写的脚本来创建github远程仓库．**
 
-`main` is now named **master**
+在github创建好远程仓库后，可以通过以下两种方式创建本地仓库，关联github远程仓库并推送提交
 
-默认分支branch
-main -> master
-
-if you have a local clone, you can update it by running the following commands.
-
-Settings->Repositories->Repository default branch->(master) Update
+1. 将github远程仓库clone到本地后再push提交内容
 
 ```git
 git clone /path/to/repository      # 创建本地仓库克隆版本
 git clone git@github.com:zhudingsuifeng/restart.git     # 采用ssh链接方式创建远程仓库克隆版本
 git clone git@github.com:zhudingsuifeng/restart.git bee # 指定目录
 git clone -o github git@github.com:zhudingsuifeng/restart.git bee   # 指定远程仓库名称为github
-
-echo "# test" >> README.md
-git init
-git add READMD.md
-git commit -m "first commit"
-git branch -M master
-git remote add github https://github.com/zhudingsuifeng/test.git
-git push -u github master
+git clone -o https://github.com/zhudingsuifeng/restart.git ant      # https链接方式
 ```
+
+由于种族歧视的原因，github将原来远程仓库默认主分支名称由master改为main．
+
 ```git
+git branch -a
+
+* main
+  remotes/github/HEAD -> github/main
+  remotes/github/main
+
+git remote -v
+
+github  https://github.com/zhudingsuifeng/restart.git(fetch)
+github  https://github.com/zhudingsuifeng/restart.git(push)
+```
+
+> 可以通过在github的操作将默认主分支由main -> master
+> Settings->Repositories->Repository default branch->(master) Update
+> 该操作只能对修改以后创建的仓库repository产生作用，而对已经建立的仓库repository无影响．
+
+> 为了将指定仓库repository默认分支branch修改为master，可以选中指定仓库repository，如restart
+> zhudingsuifeng/test->Settings->Branches->Default branch->Rename`main`to master
+
+为了将本地clone的仓库与远程仓库相匹配，本地默认主分支也要由main->master
+
+- 可以删除本地仓库重新clone远程仓库
+
+```git
+$ pwd 
+/home/fly/ant
+$ cd ..
+$ rm -rf ant
+$ git clone -o github https://github.com/zhudingsuifeng/restart.git ant
+```
+
+- 也可以在已clone本地仓库的基础上修改分支branch后重新关联远程仓库repository
+
+```git
+
 git branch -m main master
 git fetch github
 git branch github/master master
 git remote set-head master -a
+```
+
+总是显示远端branch超出local branch
+
+2. 本地初始化一个仓库，设置关联远程仓库地址后提交push内容
+
+假设远程github仓库repository默认主分支已经修改为master
+
+```git
+$ mkdir ant
+$ cd ant
+$ echo "# test" >> README.md
+git init
+git add READMD.md
+git commit -m "first commit"
+git branch -a
+
+* master        # 本地主分支默认为master，在提交commit之后才会创建，init时并不会创建分支
+
+git remote add github https://github.com/zhudingsuifeng/restart.git
+git push -u github master
 ```
 
 #### github经常无法访问
@@ -219,31 +266,31 @@ git clone -o gitee https://gitee.com/zhudingsuifeng/restart.git ant   # 指定�
 
 ```git
 $ touch readme.md                   　
-$ git add .                           # 将当前目录所有文件添加到git暂存区
-$ git commit -m "my first commit "    # 提交并备注提交信息
-$ git push origin master              # 将本地提交推送到远程origin仓库的master分支
-# origin 是默认远程仓库名称，也可以叫其他名称，如gitee，master 是默认主分支名称
+git add .                           # 将当前目录所有文件添加到git暂存区
+git commit -m "my first commit "    # 提交并备注提交信息
+git push origin master              # 将本地提交推送到远程origin仓库的master分支
+origin 是默认远程仓库名称，也可以叫其他名称，如gitee，master 是默认主分支名称
 ```
 
 2. 本地初始化一个仓库，设置远程仓库地址后再做push
 
 ```git
-$ git init
-$ git remote add gitee https://gitee.com/zhudingsuifeng/restart.git
+git init
+git remote add gitee https://gitee.com/zhudingsuifeng/restart.git
 # 为了区分与github默认远程仓库名称也叫origin，我们将gitee远程仓库名称命名为gitee
-$ git pull gitee master         # 拉取远程仓库内容同步到本地仓库
-$ git add .
-$ git commit -m "第一次提交"
-$ git push giee master
+git pull gitee master         # 拉取远程仓库内容同步到本地仓库
+git add .
+git commit -m "第一次提交"
+git push giee master
 ```
 
 新建仓库时，如果在gitee平台远程仓库中已经存在readme或其他文件，而本地仓库初始化为空文件夹，这时提交可能会存在冲突．解决冲突需要选择是保留线上文件或者舍弃线上文件，如果舍弃线上文件，可以选择强制推送．
 
-`$ git push gitee master -f`
+`git push gitee master -f`
 
 如果行要保留线上文件，需要先拉取远程仓库文件再重新推送．
 
-`$ git pull gitee master`
+`git pull gitee master`
 
 冲突的原因是线上存在本地未出现的文件，就是说在初次发生关联时，远程仓库有本地仓库没有的文件，gitee,github远程仓库就会认为远程仓库分支处在分支的更超前位置，提交失败．
 
@@ -252,3 +299,8 @@ $ git push giee master
 > 仓库镜像管理功能用于配置和管理仓库镜像，可以实现不同平台之间仓库分支，标签和提交信息的自动同步．
 > Push镜像用于将Gitee的仓库自动镜像到GitHub.Pull镜像用于将GitHub的仓库镜像到Gitee.
 > gitee仓库镜像管理的功能不是自动开通的，需要申请，符合要求的GVP项目或推荐项目才能开通此功能．
+
+### 使用脚本创建github/gitee远程仓库
+
+```vim
+```
