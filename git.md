@@ -1,8 +1,16 @@
 ## git 
 
-有没有什么办法将每次提交的时间自动更新显示在文档中，标识内容的时效性。
+git - the stupid content tracker
 
-图片可以上传到gitee
+`git help git`
+
+Git is a fast, acalable, distributed revision control system with an unusually rich command set that provides both high-level operations and full access to internals.
+
+See gittutorial to get started, the see giteveryday for a useful minimum set of commands. The Git User's Manual has a more in-depth introduction.
+
+After you mastered the basic concepts, you can come back to this page to learn what commands Git offers. You can learn more about individual Git commands with "git help command". gitcli manual page gives you an overview of the command-line command syntax.
+
+### git - 简明指南
 
 #### 入门
 
@@ -29,21 +37,64 @@ git merge test      # 合并当前分支与test分支
 git branch -d test  # 删除test分支
 ```
 
+#### 工作流
+
+本地仓库由git维护的三棵"树"组成。
+工作目录，持有实际文件。
+
+```git
+git add <filename>   # 添加更改到暂存区
+git add *
+```
+
+暂存区(Index,Stage)，缓存区域，临时保存改动。
+
+```git
+git commit -m "附加提交信息"   # 实际提交改动
+```
+
+HEAD，指向最后一次提交的结果。
+
+#### 推送改动
+
+将改动从本地仓库的HEAD推送到远程仓库。
+
+`git push origin_repository_name branch_name`
+
+#### 分支
+
+#### 更新与合并
+
+
+#### 标签
+
+
+#### 替换本地改动
+
+
+
+### 解决冲突
+
+```git
+```
+
+
+
+### common Git commands uesd in various situations
+
+#### start a working area (see also: git help tutorial)
+
+```git
+	clone			Clone a repository into a new directory
+	init 			Create an empty Git repository or reinitialize an existing one
+```
+
+有没有什么办法将每次提交的时间自动更新显示在文档中，标识内容的时效性。
+
+图片可以上传到gitee
+
 
 ### git教程
-
-git init
-git add
-git commit 
-git push
-git pull
-git remote
-git banch
-git config
-git -T
-git merge
-git fetch
-git 
 
 git安装配置
 git工作流程
@@ -92,9 +143,10 @@ ssh -T git@github.com   # 测试是否成功配置ssh key.
 之前已经是https链接，想要使用ssh提交，需要修改项目目录下.git文件夹下的config文件，将地址修改为ssh地址．
 
 
+
 ### github
 
-github创建repository存储库的时候，最好创建一个空的，license也不要选，不然后面推送不成功。
+github创建repository存储库的时候，最好创建一个空的，license也不要选，不然与gitee混用推送有可能不成功。
 
 总是显示远端branch超出local branch
 
@@ -102,14 +154,18 @@ The default branch has been renamed!
 
 `main` is now named **master**
 
+默认分支branch
+main -> master
+
 if you have a local clone, you can update it by running the following commands.
 
 Settings->Repositories->Repository default branch->(master) Update
 
 ```git
 git clone /path/to/repository      # 创建本地仓库克隆版本
-git clone git@github.com:zhudingsuifeng/restart.git     # 创建远程仓库克隆版本
-
+git clone git@github.com:zhudingsuifeng/restart.git     # 采用ssh链接方式创建远程仓库克隆版本
+git clone git@github.com:zhudingsuifeng/restart.git bee # 指定目录
+git clone -o github git@github.com:zhudingsuifeng/restart.git bee   # 指定远程仓库名称为github
 
 echo "# test" >> README.md
 git init
@@ -119,45 +175,16 @@ git branch -M master
 git remote add github https://github.com/zhudingsuifeng/test.git
 git push -u github master
 ```
-
-#### 工作流
-
-本地仓库由git维护的三棵"树"组成。
-工作目录，持有实际文件。
-
 ```git
-git add <filename>   # 添加更改到暂存区
-git add *
+git branch -m main master
+git fetch github
+git branch github/master master
+git remote set-head master -a
 ```
 
-暂存区(Index,Stage)，缓存区域，临时保存改动。
+#### github经常无法访问
 
-```git
-git commit -m "附加提交信息"   # 实际提交改动
-```
-
-HEAD，指向最后一次提交的结果。
-
-#### 推送改动
-
-将改动从本地仓库的HEAD推送到远程仓库。
-
-`git push origin_repository_name branch_name`
-
-#### 分支
-
-#### 更新与合并
-
-
-#### 标签
-
-
-#### 替换本地改动
-
-
-### github经常无法访问
-
-域名()，又称网域，是有一串用点分割的名字组成的Internet上某一台计算机或计算机组的名称，用于在数据传输时对计算机的定位标识．
+域名，又称网域，是有一串用点分割的名字组成的Internet上某一台计算机或计算机组的名称，用于在数据传输时对计算机的定位标识．
 
 尽管IP地址能够唯一的标记网络上的计算机，但IP地址是一长串数字，不直观，而且用户记忆十分不方便，于是人们又发明了另一套字符型的地址方案，即所谓的域名地址．IP地址和域名是一一对应的，这份域名地址的信息存放在一个叫域名服务器(DNS,Domain name server)的主机内，使用者只需了解易记的域名地址，其对应转换工作就留给了域名服务器．域名服务器就是提供IP地址和域名之间的转换服务的服务器．
 
@@ -174,55 +201,51 @@ sudo vi /etc/hosts
 
 /etc/hosts为了访问github.com，可以自己实现dns功能，在https://www.ipaddress.com中输入域名，得到对应的IP，在/etc/hosts中添加对应内容，后面网址有可能就能正常访问了．
 
-```git
-git branch -m main master
-git fetch github
-git branch github/master master
-git remote set-head master -a
-```
-
-默认分支branch
-main -> master
-
 ### gitee
 
 需要在gitee创建远端仓库用于与本地git关联．
 
-创建好仓库后，可以通过以下两共方式向仓库提交代码．
+创建好仓库后，可以通过以下两种方式向仓库提交代码．
 
 1. 先将仓库clone到本地，修改后再push到Gitee的仓库
 
-git clone https://gitee.com/zhudingsuifeng/restart.git
+```git
+git clone https://gitee.com/zhudingsuifeng/restart.git                # 克隆远程仓库到本地restart
+git clone https://gitee.com/zhudingsuifeng/restart.git ant            # 克隆到指定目录ant
+git clone -o gitee https://gitee.com/zhudingsuifeng/restart.git ant   # 指定远程仓库名称为gitee
+```
 
 修改代码后，在仓库目录下执行下面命令
 
 ```git
+$ touch readme.md                   　
 $ git add .                           # 将当前目录所有文件添加到git暂存区
 $ git commit -m "my first commit "    # 提交并备注提交信息
-$ git push origin master              # 将本地提交推送到远程仓库
-# origin 是远程仓库名称，也可以叫其他名称，如gitee，master 是默认主分支
+$ git push origin master              # 将本地提交推送到远程origin仓库的master分支
+# origin 是默认远程仓库名称，也可以叫其他名称，如gitee，master 是默认主分支名称
 ```
 
 2. 本地初始化一个仓库，设置远程仓库地址后再做push
 
 ```git
 $ git init
-$ git remote add origin https://gitee.com/zhudingsuifeng/restart.git
-$ git pull origin master         # 拉取远程仓库内容同步到本地仓库
+$ git remote add gitee https://gitee.com/zhudingsuifeng/restart.git
+# 为了区分与github默认远程仓库名称也叫origin，我们将gitee远程仓库名称命名为gitee
+$ git pull gitee master         # 拉取远程仓库内容同步到本地仓库
 $ git add .
 $ git commit -m "第一次提交"
-$ git push origin master
+$ git push giee master
 ```
 
 新建仓库时，如果在gitee平台远程仓库中已经存在readme或其他文件，而本地仓库初始化为空文件夹，这时提交可能会存在冲突．解决冲突需要选择是保留线上文件或者舍弃线上文件，如果舍弃线上文件，可以选择强制推送．
 
-`$ git push origin master -f`
+`$ git push gitee master -f`
 
 如果行要保留线上文件，需要先拉取远程仓库文件再重新推送．
 
-`$ git pull origin master`
+`$ git pull gitee master`
 
-冲突的原因是线上存在本地未出现的文件，就是说在初次发生关联时，远程仓库有本地仓库没有的文件，github就会认为远程仓库处在分支的更超前位置，提交失败．
+冲突的原因是线上存在本地未出现的文件，就是说在初次发生关联时，远程仓库有本地仓库没有的文件，gitee,github远程仓库就会认为远程仓库分支处在分支的更超前位置，提交失败．
 
 #### gitee仓库镜像管理(Gitee<->Github双向同步)
 
