@@ -179,12 +179,12 @@ github  https://github.com/zhudingsuifeng/restart.git(fetch)
 github  https://github.com/zhudingsuifeng/restart.git(push)
 ```
 
-> 可以通过在github的操作将默认主分支由main -> master
+> 可以通过在github操作将默认主分支由main -> master
 > Settings->Repositories->Repository default branch->(master) Update
 > 该操作只能对修改以后创建的仓库repository产生作用，而对已经建立的仓库repository无影响．
 
 > 为了将指定仓库repository默认分支branch修改为master，可以选中指定仓库repository，如restart
-> zhudingsuifeng/test->Settings->Branches->Default branch->Rename`main`to master
+> zhudingsuifeng/restart->Settings->Branches->Default branch->Rename`main`to master
 
 为了将本地clone的仓库与远程仓库相匹配，本地默认主分支也要由main->master
 
@@ -201,14 +201,55 @@ $ git clone -o github https://github.com/zhudingsuifeng/restart.git ant
 - 也可以在已clone本地仓库的基础上修改分支branch后重新关联远程仓库repository
 
 ```git
+git branch -a
 
-git branch -m main master
-git fetch github
-git branch github/master master
-git remote set-head master -a
+* main
+  remotes/github/HEAD -> github/main
+  remotes/github/main
+
+git branch -m main master            # 重命名本地local分支名称main -> master
+# -m, --move Move/rename a branch, together with its config and reflog.
+git branch -a
+
+* master
+  remotes/github/HEAD -> github/main
+  remotes/github/main
+
+git fetch github                     # Download objects and refs from another repository
+git branch -a
+
+* master
+  remotes/github/HEAD -> github/main
+  remotes/github/main
+  remotes/github/master
+
+git branch -u github/master master   # -u <upstream>, --set-upstream-to=<upstream>
+# git branch -u <upstream> <branchname>   # 制定本地分支branchname关联远程分支upstream
+# Set up <branchname>'s tracking insformation so <upstream> is considered <branchname>'s upstream baranch.
+# If no <branchname> is specified, then it defaults to the current branch.
+git remote set-head master -a        # Sets the default branch for the named remote.
 ```
 
-总是显示远端branch超出local branch
+#### 删除远程跟踪分支
+
+```git
+git branch -a
+
+* master
+  remotes/github/HEAD -> github/master   # github/HEAD set to master
+  remotes/github/main
+  remotes/github/master
+git branch -rl                   # -r, --remotes Combine with -l, --list to list the remote-tracking branches.
+
+  github/HEAD -> github/master   # github/HEAD set to master
+  github/main
+  github/master
+git branch -rd github/main       # 删除远程跟踪分支github/main
+git branch -rl
+
+  github/HEAD -> github/master   # github/HEAD set to master
+  github/master
+```
 
 2. 本地初始化一个仓库，设置关联远程仓库地址后提交push内容
 
