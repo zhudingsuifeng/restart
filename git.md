@@ -142,7 +142,58 @@ ssh -T git@github.com   # 测试是否成功配置ssh key.
 
 之前已经是https链接，想要使用ssh提交，需要修改项目目录下.git文件夹下的config文件，将地址修改为ssh地址．
 
+### 远程仓库分支与本地仓库分支冲突解决
 
+当在gitee创建远程仓库的时候选择readme，本地init仓库的时候重新创建readme文件，push时被拒绝．
+
+> 更新被拒绝，因为远程仓库包含本地尚不存在的提交．这通常是因为另外一个仓库已向该引用进行了推送．再次推送前，可能需要先整合远程变更．
+
+**原因就是远程仓库在分支树上处于更前位置，远程仓库与本地仓库存在冲突．为了解决冲突，需要把远程仓库拉取到本地的其他分支，将远程仓库与本地仓库之间的冲突变为本地仓库不同分支之间的冲突，通过merge分支解决冲突．**
+
+已创建远程仓库ant，默认远程分支master，创建本地仓库，并解决冲突．
+
+```git
+$ mkdir ant
+$ cd ant
+git init
+git add readme.md
+git commit -m '解决冲突'
+git branch -a
+
+* master
+
+git remote -v
+git remote add gitee git@gitee.com:zhudingsuifeng/ant.git   # Add a remote named <name> for the repository at <URL>.
+git remote -v
+
+gitee   git@gitee.com:zhudingsuifeng/ant.git(fetch)
+gitee   git@gitee.com:zhudingsuifeng/ant.git(push)
+
+git push gitee master
+! [rejected]   master -> master (fetch first)
+
+git fetch gitee master:dev   # 拉取gitee远程仓库repository的分支master到本地分支dev，会自动创建对应分支
+git branch -a
+
+  dev
+* master
+  remotes/gitee/master 
+
+git diff dev   # 查看远程最新分支dev与本地分支master的区别
+git merge dev  # 将当前分支master与dev分支合并
+
+有可能会报错-> fatal:拒绝合并无关的历史  -> 这有可能是远程分支包含其他本地没有的文件所致
+
+git merge dev --allow-unrelated-histories   # 解决无关历史问题
+git add *      # 将合并产生的文件新版本提交到本地缓存
+git commit -m '合并冲突'
+git push gitee master   # 推送成功
+git branch -d dev       # 删除临时分支
+git branch -a           # dev分支已被删除
+
+* master
+  remotes/gitee/master 
+```
 
 ### github
 
@@ -228,17 +279,17 @@ git branch -u github/master master   # -u <upstream>, --set-upstream-to=<upstrea
 # Set up <branchname>'s tracking insformation so <upstream> is considered <branchname>'s upstream baranch.
 # If no <branchname> is specified, then it defaults to the current branch.
 git remote set-head master -a        # Sets the default branch for the named remote.
-```
-
-#### 删除远程跟踪分支
-
-```git
 git branch -a
 
 * master
   remotes/github/HEAD -> github/master   # github/HEAD set to master
   remotes/github/main
   remotes/github/master
+```
+
+#### 删除远程跟踪分支
+
+```git
 git branch -rl                   # -r, --remotes Combine with -l, --list to list the remote-tracking branches.
 
   github/HEAD -> github/master   # github/HEAD set to master
