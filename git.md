@@ -12,72 +12,87 @@ After you mastered the basic concepts, you can come back to this page to learn w
 
 ### git - 简明指南
 
-#### 入门
+- 本地init方式创建新仓库
 
-使用git前，需要先建立一个仓库(repository)。
+使用git前，需要先建立一个仓库(repository)。使用当前目录作为git本地仓库，需要先执行`git init`初始化。
 
-使用当前目录作为git本地仓库，需要先初始化。
+- 通过clone的方式创建新仓库
 
 ```git
-git init                # 初始化本地仓库
-git init new            # 将指定目录new初始化为本地仓库
-git add filename        # 添加新文件到暂存区
-git commit -m "add file"   # 提交版本
-git commit -a -m "changed some files"
-# 将所有被修改或者已删除的且已经被git管理的文档提交到本地仓库。-a不会造成新文件被提交。
+git clone -o gitee https://gitee.com/zhudingsuifeng/restart.git ant
 ```
 
-删除
+- 工作流
 
-git rm file
-```git
-git branch test     # 创建新的本地分支
-git checkout test   # 更改当前分支到test
-git merge test      # 合并当前分支与test分支
-git branch -d test  # 删除test分支
-```
+本地仓库由git维护的三棵"树"组成。第一个是`工作目录`，他持有实际文件;第二个是暂存区(index)，就像个缓存区域，临时保存改动;最后是`HEAD`，指向最后一次提交的结果．
 
-#### 工作流
+![git tree](https://www.runoob.com/manual/git-guide/img/trees.png)
 
-本地仓库由git维护的三棵"树"组成。
 工作目录，持有实际文件。
 
 ```git
 git add <filename>   # 添加更改到暂存区
 git add *
+git commit -a -m "changed some files"
+# 将所有被修改或者已删除的且已经被git管理的文档提交到本地仓库。-a不会造成新文件被提交。
 ```
 
 暂存区(Index,Stage)，缓存区域，临时保存改动。
 
 ```git
-git commit -m "附加提交信息"   # 实际提交改动
+git commit -m "附加提交信息"   # 实际提交改动到HEAD，但是还没有push到gitee/github远程仓库
 ```
 
 HEAD，指向最后一次提交的结果。
 
-#### 推送改动
+-  推送改动
 
-将改动从本地仓库的HEAD推送到远程仓库。
+现有改动已经存储在本地仓库的HEAD，执行`git push`命令将改动推送到远程仓库。
 
 `git push origin_repository_name branch_name`
 
-#### 分支
+如果不是通过clone创建的本地仓库，此时还没有关联远程仓库，可以使用
+`git remote add origin_repository_name branch_name`
+命令将本地仓库与远程仓库相关连，之后再push推送改动就可以了．
 
-#### 更新与合并
+- 分支
 
+分支使用来隔离不同开发路径的方式，创建仓库时，master是本地仓库默认分支．通常是在其他(dev)分支上开发，完成后再将功能分支合并到主分支上．
 
-#### 标签
-
-
-#### 替换本地改动
-
-
-
-### 解决冲突
+![git tree](https://www.runoob.com/manual/git-guide/img/branches.png)
 
 ```git
+git checkout -b dev      # 创建一个dev分支，同时切换当前分支到dev分支
+git checkout master      # 切换会master分支
+git branch -d dev        # 删掉dev分支
+git push gitee dev       # 如果不把dev分支推送到远程仓库gitee，dev分支就是本地私有的，对其他人是未知的
 ```
 
+- 更新与合并
+
+```git
+git pull                 # 从远程仓库拉取更新到本地仓库，等价于本地分支获取(fetch)并合并(merge)远端改动．
+git merge dev            # 合并dev分支到当前分支，也可以指定其他分支合并到当前分支
+git diff master dev      # 查看不同分支之间的差异，方便处理冲突conflicts
+```
+
+- 标签
+
+为软件发布创建标签，便于记忆与管理．
+
+```git
+git tag 1.0.0 id         # 创建提交内容的版本号，id是内容的对应ID
+git log                  # 获取提交内容的ID
+```
+
+- 替换本地改动
+
+```git
+git checkout -- <filename>   # 使用HEAD中最新内容替换掉工作目录中的文件filename．已经添加到暂存区index的改动或者新文件都不受影响
+git remote add gitee gitee git@gitee.com:zhudingsuifeng/ant.git
+git fetch gitee <master>:<master>   # 获取服务器上最新版本
+git reset --hard gitee/master       # 将本地主分支指向gitee/master，所有未提交commit的内容都会被丢弃掉
+```
 
 
 ### common Git commands uesd in various situations
@@ -91,9 +106,6 @@ HEAD，指向最后一次提交的结果。
 
 有没有什么办法将每次提交的时间自动更新显示在文档中，标识内容的时效性。
 
-图片可以上传到gitee
-
-
 ### git教程
 
 git安装配置
@@ -104,9 +116,8 @@ git基本操作
 git分支管理
 git查看提交历史
 git标签
-git Github
-git Gitee
-git服务器搭建
+
+### github/gitee配置
 
 同一个项目有两种地址方式，一种是https方式，一种是ssh方式．
 
@@ -116,19 +127,16 @@ ssh url通过在github配置ssh key后，使我们在git提交代码时跳过验
 ```git
 https://github.com/zhudingsuifeng/restart.git
 git@github.com:zhudingsuifeng/restart.git
-```
-
-```git
-git config --global user.name "zhudingsuifeng"
-git config --global user.email "your_email@example.com"
+git config --global user.name 'zhudingsuifeng'
+git config --global user.email '1002557401@qq.com'
 git config --list  # 查看当前git环境所有配置
 ```
 
-### https
+#### https
 
 
 
-### ssh key
+#### ssh key
 
 生成ssh key并在github配置公钥．
 
@@ -394,5 +402,10 @@ git push giee master
 
 ### 使用脚本创建github/gitee远程仓库
 
-```vim
-```
+命令行创建gitee远程仓库的本质是使用`curl`工具与https://gitee.com交互，模拟人的点击操作．
+
+使用命令行创建gitee远程仓库需要用到私人令牌，生成步骤如下:
+
+gitee->设置->安全设置->私人令牌->提交(保存好私人令牌)
+
+### git服务器搭建
