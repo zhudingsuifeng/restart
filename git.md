@@ -6,6 +6,12 @@ git - the stupid content tracker
 
 Git is a fast, acalable, distributed revision control system with an unusually rich command set that provides both high-level operations and full access to internals.
 
+Git是一个分布式版本控制系统，没有所谓"中央服务器"，每个人电脑里都有完整的版本库，不需要联网就可以进行版本管理．
+
+**所有版本控制系统只能跟踪文本文件的改动**
+
+不同人员之间的协作开发，只要两个人处在同一局域网就可以互相推送版本修改．
+
 See gittutorial to get started, the see giteveryday for a useful minimum set of commands. The Git User's Manual has a more in-depth introduction.
 
 After you mastered the basic concepts, you can come back to this page to learn what commands Git offers. You can learn more about individual Git commands with "git help command". gitcli manual page gives you an overview of the command-line command syntax.
@@ -21,6 +27,8 @@ After you mastered the basic concepts, you can come back to this page to learn w
 ```git
 git clone -o gitee https://gitee.com/zhudingsuifeng/restart.git ant
 ```
+git diff filename   # 查看文件filename的改动
+
 
 - 工作流
 
@@ -94,6 +102,11 @@ git fetch gitee <master>:<master>   # 获取服务器上最新版本
 git reset --hard gitee/master       # 将本地主分支指向gitee/master，所有未提交commit的内容都会被丢弃掉
 ```
 
+```git
+git config --global user.name 'zhudingsuifeng'
+git config --global user.email '1002557401@qq.com'
+git config --list  # 查看当前git环境所有配置
+```
 
 ### common Git commands uesd in various situations
 
@@ -104,43 +117,19 @@ git reset --hard gitee/master       # 将本地主分支指向gitee/master，所
 	init 			Create an empty Git repository or reinitialize an existing one
 ```
 
-有没有什么办法将每次提交的时间自动更新显示在文档中，标识内容的时效性。
-
-### git教程
-
-git安装配置
-git工作流程
-git工作区、暂存区和版本库
-git创建仓库
-git基本操作
-git分支管理
-git查看提交历史
-git标签
-
-### github/gitee配置
+### git远程链接
 
 同一个项目有两种地址方式，一种是https方式，一种是ssh方式．
 
-https url可以直接有效打开网址，但是用户每次通过git提交的时候都要输入用户名和密码．
-ssh url通过在github配置ssh key后，使我们在git提交代码时跳过验证过程，简化操作流程．
+- https
 
-```git
-https://github.com/zhudingsuifeng/restart.git
-git@github.com:zhudingsuifeng/restart.git
-git config --global user.name 'zhudingsuifeng'
-git config --global user.email '1002557401@qq.com'
-git config --list  # 查看当前git环境所有配置
-```
+`https://github.com/zhudingsuifeng/restart.git`可以直接有效打开网址，但是用户每次通过git提交的时候都要输入用户名和密码．
 
-#### https
+- ssh key
 
+`git@github.com:zhudingsuifeng/restart.git`需要在github配置ssh key后使用，可以在git提交代码时跳过验证过程，简化操作流程．
 
-
-#### ssh key
-
-生成ssh key并在github配置公钥．
-
-` ssh-keygen -t ed25519 -C "your_email@example.com"`
+`ssh-keygen -t ed25519 -C "your_email@example.com"   # 生成ssh key并在github配置公钥．`
 
 复制~/.ssh/id_ed25519.pub内容到github中，setting->SSH and GPG keys．
 
@@ -148,7 +137,7 @@ git config --list  # 查看当前git环境所有配置
 ssh -T git@github.com   # 测试是否成功配置ssh key.
 ```
 
-之前已经是https链接，想要使用ssh提交，需要修改项目目录下.git文件夹下的config文件，将地址修改为ssh地址．
+之前已经使用https链接的，想要使用ssh提交，需要修改项目目录下.git文件夹下的config文件，将地址修改为ssh地址．
 
 ### 远程仓库分支与本地仓库分支冲突解决
 
