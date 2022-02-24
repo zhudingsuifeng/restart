@@ -6,43 +6,69 @@ git - the stupid content tracker
 
 Git is a fast, acalable, distributed revision control system with an unusually rich command set that provides both high-level operations and full access to internals.
 
-Git是一个分布式版本控制系统，没有所谓"中央服务器"，每个人电脑里都有完整的版本库，不需要联网就可以进行版本管理．
-
-**所有版本控制系统只能跟踪文本文件的改动**
-
-不同人员之间的协作开发，只要两个人处在同一局域网就可以互相推送版本修改．
-
 See gittutorial to get started, the see giteveryday for a useful minimum set of commands. The Git User's Manual has a more in-depth introduction.
 
 After you mastered the basic concepts, you can come back to this page to learn what commands Git offers. You can learn more about individual Git commands with "git help command". gitcli manual page gives you an overview of the command-line command syntax.
 
-### git - 简明指南
+### git tutorial
 
-- 本地init方式创建新仓库
+**所有版本控制系统只能跟踪文本文件的改动**
+
+Git是一个分布式版本控制系统，区别于客户端-服务器式的集中式版本控制系统.
+
+Github就是一个方便交换修改而非必须的"中心服务器"．
+
+#### git配置
+
+Git提供了一个git config工具，用来配置或读取相应的工作环境变量．
+
+- /etc/gitconfig:对系统中所有用户都普遍适用．git config --system 读写的就是这个文件．
+
+- ~/.gitconfig:适用于当前用户．git config --global 读写的就是这个文件．
+
+- .git/config:适用于当前项目．
+
+> .git/config,~/.gitconfig,/etc/gitconfig三个文件影响范围由小到大，优先级由大到小．
+
+```git
+git config --global user.name 'zhudingsuifeng'
+git config --global user.email '1002557401@qq.com'
+git config --list  # 查看当前git环境所有配置
+```
+
+#### 创建版本库
+
+1. 本地init方式创建新仓库
 
 使用git前，需要先建立一个仓库(repository)。使用当前目录作为git本地仓库，需要先执行`git init`初始化。
 
-- 通过clone的方式创建新仓库
+git init后，Git仓库会生成一个.git目录，它包含了资源的所有元数据．
+
+2. 通过clone的方式创建新仓库
 
 ```git
+git clone git@github.com:zhudingsuifeng/restart.git     # 采用ssh链接方式创建远程仓库克隆版本
+git clone git@github.com:zhudingsuifeng/restart.git ant # 指定目录
+git clone -o github git@github.com:zhudingsuifeng/restart.git ant   # 指定远程仓库名称为github
+git clone -o https://github.com/zhudingsuifeng/restart.git ant      # https链接方式
 git clone -o gitee https://gitee.com/zhudingsuifeng/restart.git ant
 ```
-git diff filename   # 查看文件filename的改动
 
-
-- 工作流
+#### 内容管理(工作流)
 
 本地仓库由git维护的三棵"树"组成。第一个是`工作目录`，他持有实际文件;第二个是暂存区(index)，就像个缓存区域，临时保存改动;最后是`HEAD`，指向最后一次提交的结果．
-
+添加到缓存区前查看文件filename的改动是个好习惯
 ![git tree](https://www.runoob.com/manual/git-guide/img/trees.png)
 
 工作目录，持有实际文件。
 
 ```git
-git add <filename>   # 添加更改到暂存区
-git add *
+git status           # 查看仓库当前状态
+git add <filename>   # 添加指定文件修改更改到暂存区
+git add *            # 添加所有修改和新增文件到暂存区index/stage
 git commit -a -m "changed some files"
 # 将所有被修改或者已删除的且已经被git管理的文档提交到本地仓库。-a不会造成新文件被提交。
+git diff filename    # 查看缓存区index/stage与工作区文件差别
 ```
 
 暂存区(Index,Stage)，缓存区域，临时保存改动。
@@ -102,11 +128,6 @@ git fetch gitee <master>:<master>   # 获取服务器上最新版本
 git reset --hard gitee/master       # 将本地主分支指向gitee/master，所有未提交commit的内容都会被丢弃掉
 ```
 
-```git
-git config --global user.name 'zhudingsuifeng'
-git config --global user.email '1002557401@qq.com'
-git config --list  # 查看当前git环境所有配置
-```
 
 ### common Git commands uesd in various situations
 
