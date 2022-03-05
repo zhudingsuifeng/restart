@@ -18,7 +18,7 @@ Git是一个分布式版本控制系统，区别于客户端-服务器式的集�
 
 Github就是一个方便交换修改而非必须的"中心服务器"．
 
-#### git配置
+### git配置
 
 Git提供了一个git config工具，用来配置或读取相应的工作环境变量．
 
@@ -36,7 +36,7 @@ git config --global user.email '1002557401@qq.com'
 git config --list  # 查看当前git环境所有配置
 ```
 
-#### 创建版本库
+### 创建版本库
 
 1. 本地init方式创建新仓库
 
@@ -54,7 +54,9 @@ git clone -o https://github.com/zhudingsuifeng/restart.git ant      # https链�
 git clone -o gitee https://gitee.com/zhudingsuifeng/restart.git ant
 ```
 
-#### 内容管理(工作区域)
+### 工作区域和文件状态(版本管理)
+
+#### 工作区域
 
 git本地有三个工作区域:工作目录(working directory)，暂存区(stage/index)，本地仓库(repository/git directory)．如果加上远程的git仓库(remote repository)就可以分为四个工作区域．
 
@@ -62,10 +64,7 @@ git本地有三个工作区域:工作目录(working directory)，暂存区(stage
 
 ![git tree](https://www.runoob.com/manual/git-guide/img/trees.png)
 
-- 工作目录(workspace/working directory)，持有实际文件。
-
-已修改(modified)表示修改了文件，但还没保存到版本库中．
-
+- 工作目录(workspace/working directory)，执行`git init`的当前目录，实际持有文件。
 
 ```git
 git status           # 查看仓库当前状态
@@ -73,7 +72,7 @@ git diff             # Changes in the working tree not yet staged for the next c
 git diff filename    # 查看缓存区index/stage与工作区filename文件差别
 git diff --cached    # Changes between the index and your last commit.暂存区改动与版本库内容比较
 git diff HEAD        # Changes in the working tree since your last commit.工作区内容与版本库内容比较
-git add <filename>   # 添加指定filename文件修改更改到暂存区
+git add <file>       # 添加指定file文件修改更改到暂存区
 git add *            # 添加所有修改和新增文件到暂存区index/stage
 git commit -a -m "changed some files"
 # 将所有被修改或者已删除的且已经被git管理的文档提交到本地仓库。-a不会造成新文件被提交。
@@ -81,26 +80,66 @@ git commit -a -m "changed some files"
 
 - 暂存区(Index,Stage)，缓存区域，临时保存改动，保存在.git/index文件中．
 
-已暂存(staged)表示对已修改文件的当前版本做了标记，使之包含在下次提交中．
-
 ```git
 git commit -m "附加提交信息"   # 实际提交改动到HEAD，但是还没有push到gitee/github远程仓库
 # 把暂存区的修改提交到当前分支，提交之后暂存区就被清空了
 git ls-files --stage           # Show staged contents' mode bits, object name and stage number in the output.
-git reset -- <file>            # 回退所有暂存区file的内容，暂存区该file所有add全部回退
+git ls-files -s                # --stage 显示暂存区内容的对象名称
+git ls-files -c                # --cached 显示缓存的文件
+git ls-files -d                # --deleted 显示已删除的文件
+git ls-files -m                # --modified 显示已修改的文件
+git ls-files -k                # --killed 显示文件系统需要删除的文件
+git reset -- <file>            # 回退所有暂存区file的内容，暂存区该file所有add全部回退，并不改变file文件内容
 git checkout .                 # 使用暂存区全部内容覆盖工作目录
 git checkout -- <file>         # 使用暂存区file修改覆盖工作目录中的file，用来撤销本地修改，会改变file文件实际内容
 git rm --cached <file>         # 删除暂存区文件/回退最后一次add的file内容，工作区文件不改变
 ```
 
-- HEAD，指向最后一次提交的结果。
+- 本地仓库(repository)位于.git目录，除index文件外
 
-已提交(committed)表示数据已经保存在本地版本库中．
+的其他文件和对象，用于存储commit的版本和一系列指针/游标.
+
+HEAD，指向最后一次提交的结果。
+
+`HEAD` names the commit on which you based the changes in the working tree.
+commit,checkout和merge都会导致HEAD移动
+
+
+ORIG_HEAD 针对某些危险操作，git通过记录HEAD指针的上次所在的
+
+```git
+git reset --hard ORIG_HEAD     # 回退
+```
+
+FETCH_HEAD
+
+./git/HEAD, ORIG_HEAD, FETCH_HEAD
+
+
+
+```git
+ref: refs/heads/master
+
+git reflog　　　　　　　　　　 # 显示HEAD移动历史
+
+
+```
 
 ```git
 git commit -m "版本信息"       # 将暂存区stage/index的内容提交到版本库repository
 git commit -a -m "版本信息"    #
 git reset HEAD
+
+git checkout -b dev            # Create a new branch named dev and 切换当前分支为dev分支
+git branch -a
+
+* dev                          # checkout dev后，HEAD指向dev分支，表现为dev分支之前有星号
+  master
+
+git log
+
+commit id (HEAD -> dev)        # 通过git log也能看出HEAD指向dev分支
+
 git checkout HEAD .
 git checkout HEAD <file>
 ```
@@ -116,6 +155,16 @@ git checkout HEAD <file>
 命令将本地仓库与远程仓库相关连，之后再push推送改动就可以了．
 
 ```git
+git remote rm
+git remote remove gitee             # 删除本地指定的远程地址
+git remote add gitee git@gitee.com:zhudingsuifeng/restart.git  # 关联新的远程仓库
+
+git remote set-head gitee master    #
+
+git fetch
+
+
+
 git branch -r            # 查看远程分支
 
   gitee/master
@@ -131,7 +180,16 @@ git fetch
 git pull
 ```
 
-#### 分支
+#### 文件状态
+
+已修改(modified)表示修改了文件，但还没保存到版本库中．
+已暂存(staged)表示对已修改文件的当前版本做了标记，使之包含在下次提交中．
+已提交(committed)表示数据已经保存在本地版本库中．
+
+
+
+
+### 分支
 
 分支使用来隔离不同开发路径的方式，创建仓库时，master是本地仓库默认分支．通常是在其他(dev)分支上开发，完成后再将功能分支合并到主分支上．
 
@@ -144,7 +202,7 @@ git branch -d dev        # 删掉dev分支
 git push gitee dev       # 如果不把dev分支推送到远程仓库gitee，dev分支就是本地私有的，对其他人是未知的
 ```
 
-#### 更新与合并
+### 更新与合并
 
 ```git
 git pull                 # 从远程仓库拉取更新到本地仓库，等价于本地分支获取(fetch)并合并(merge)远端改动．
@@ -161,7 +219,7 @@ git tag 1.0.0 id         # 创建提交内容的版本号，id是内容的对应
 git log                  # 获取提交内容的ID
 ```
 
-#### 替换本地改动
+### 替换本地改动
 
 ```git
 git checkout -- <filename>   # 使用HEAD中最新内容替换掉工作目录中的文件filename．已经添加到暂存区index的改动或者新文件都不受影响
