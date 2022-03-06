@@ -66,6 +66,8 @@ git本地有三个工作区域:工作目录(working directory)，暂存区(stage
 
 - 工作目录(workspace/working directory)，执行`git init`的当前目录，实际持有文件。
 
+在工作目录中新建文件，如果没有通过`git add <file>`将文件改动添加到暂存区index/stage，此时文件处于未跟踪状态，某些git对于文件的管理是不能实现的。
+
 ```git
 git status           # 查看仓库当前状态
 git diff             # Changes in the working tree not yet staged for the next commit.工作区内容与暂存区比较
@@ -93,55 +95,61 @@ git reset -- <file>            # 回退所有暂存区file的内容，暂存区�
 git checkout .                 # 使用暂存区全部内容覆盖工作目录
 git checkout -- <file>         # 使用暂存区file修改覆盖工作目录中的file，用来撤销本地修改，会改变file文件实际内容
 git rm --cached <file>         # 删除暂存区文件/回退最后一次add的file内容，工作区文件不改变
+git rm <file>                  # 将文件从暂存区和工作区中删除，已经被提交commit到本地仓库的文件被删除，并将删除动作作为改动添加到暂存区index/stage，会有提示可以通过`git restore --staged`恢复
+git rm -f <file>               # 如果删除前修改过并且已经添加到暂存区的话，需要使用`-f`强制删除
+git restore --staged <file>    # 将暂存区的文件从暂存区回撤，但是不会更改文件内容
+git restore <file>             # 撤销(在工作空间但不在暂存区)文件的更改，会更改文件内容
 ```
 
-- 本地仓库(repository)位于.git目录，除index文件外
-
-的其他文件和对象，用于存储commit的版本和一系列指针/游标.
-
-HEAD，指向最后一次提交的结果。
-
-`HEAD` names the commit on which you based the changes in the working tree.
-commit,checkout和merge都会导致HEAD移动
-
-
-ORIG_HEAD 针对某些危险操作，git通过记录HEAD指针的上次所在的
-
-```git
-git reset --hard ORIG_HEAD     # 回退
-```
-
-FETCH_HEAD
-
-./git/HEAD, ORIG_HEAD, FETCH_HEAD
-
-
-
-```git
-ref: refs/heads/master
-
-git reflog　　　　　　　　　　 # 显示HEAD移动历史
-
-
-```
+- 本地仓库(repository)位于.git目录，除index文件表示的暂存区index/stage，还有的其他文件和对象，用于存储commit的版本和一系列指针/游标.
 
 ```git
 git commit -m "版本信息"       # 将暂存区stage/index的内容提交到版本库repository
-git commit -a -m "版本信息"    #
-git reset HEAD
+git commit -a -m "版本信息"    # 将已跟踪文件的修改直接提交到版本库repository
+git reset HEAD                 # git reset defaults to HEAD，使用HEAD覆盖暂存区index/stage内容，文件内容不受影响
+git checkout HEAD .            # 使用commit提交的HEAD内容覆盖工作目录所有文件
+git checkout HEAD <file>       # 使用commit提交的HEAD内容覆盖工作目录file文件，会变更文件内容
+git checkout -- <file>         # 使用commit提交的当前内容覆盖工作目录file文件，已添加到暂存区index/stage的改动不会被覆盖
+```
+
+`HEAD`可以指向分支，也可以指向提交commit。执行commit,checkout和merge等都会导致HEAD移动。
+
+`HEAD` names the ref that you commit to repository. In most cases it's probably refs/heads/master.
+
+```git
+vi .git/HEAD
+ref: refs/heads/master         # HEAD指向master分支，指针/游标
+vi .git/refs/heads/master      # master分支最新提交的commit(40位sha-1值)
 
 git checkout -b dev            # Create a new branch named dev and 切换当前分支为dev分支
 git branch -a
-
 * dev                          # checkout dev后，HEAD指向dev分支，表现为dev分支之前有星号
   master
 
 git log
-
 commit id (HEAD -> dev)        # 通过git log也能看出HEAD指向dev分支
+```
 
-git checkout HEAD .
-git checkout HEAD <file>
+`ORIG_HEAD`存放commit。当进某些危险操作时，如reset,merge或者rebase,git会将HEAD指针原来指向的commit对象的sha-1值保存在ORIG_HEAD文件中。
+
+```git
+git reset --hard ORIG_HEAD     # 可以回退到危险操作之前状态
+```
+
+`FETCH_HEAD`表示某个branch在服务器上的最新状态。执行过fetch操作的项目都会存在FETCH_HEAD文件，文件中的每一行对应于远程服务器上的一个分支。当前分支指向的FETCH_HEAD就是文件第一行对应的分支。
+
+`detached HEAD` 当执行`git checkout commit`的时候，也就是指向提交，会变为detached(分离的) HEAD的状态。
+
+```git
+git reflog　　　　　　　　　　 # 显示HEAD移动历史
+git reflog --online            # 以简介的方式显示HEAD变动历史(每一行代表一次移动)
+git checkout fed2b51(sha-1值)  # 将当前位置切换为某次提交
+git branch -a 
+
+* (HEAD detached at fed2b51)   # HEAD移动到某次提交
+  master
+
+git checkout -b dev            # 从某次提交创建分支branch，分叉
 ```
 
 - 推送/获取远程版本(push/fetch/clone/pull)
@@ -155,16 +163,11 @@ git checkout HEAD <file>
 命令将本地仓库与远程仓库相关连，之后再push推送改动就可以了．
 
 ```git
-git remote rm
+git remote rm gitee                 # remove
 git remote remove gitee             # 删除本地指定的远程地址
 git remote add gitee git@gitee.com:zhudingsuifeng/restart.git  # 关联新的远程仓库
-
-git remote set-head gitee master    #
-
-git fetch
-
-
-
+git remote set-head gitee master    # Sets or deletes the default branch for the named remote.
+git fetch gitee master              # 将远程仓库gitee的分支master内容拉取到本地仓库
 git branch -r            # 查看远程分支
 
   gitee/master
@@ -176,9 +179,14 @@ gitee  git@gitee.com:zhudingsuifeng/restart.git (push)
 
 git push gitee master    # 将本地版本库改动推送到远程版本库gitee的master分支
 git clone -o gitee git@gitee.com:zhudingsuifeng/restart.git ant   # clone 远程版本库到本ant目录，并设置远程版本库为gitee
-git fetch 
-git pull
+git pull gitee master    # merge into the current branch the remote repository gitee and branch master
+git fetch gitee          # 下面两条命令效果等同于上面一条
+git merge gitee/master
 ```
+
+`git fetch`是将远程主机的最新内容拉到本地，用户再检查了以后决定是否合并到本地分支中。
+
+`git pull`将远程主机的最新内容拉取到本地后直接合并，即：`git pull = git fetch + git merge`，这样可能会产生冲突，需要手动解决。
 
 #### 文件状态
 
