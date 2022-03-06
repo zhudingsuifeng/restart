@@ -74,6 +74,7 @@ git diff             # Changes in the working tree not yet staged for the next c
 git diff filename    # 查看缓存区index/stage与工作区filename文件差别
 git diff --cached    # Changes between the index and your last commit.暂存区改动与版本库内容比较
 git diff HEAD        # Changes in the working tree since your last commit.工作区内容与版本库内容比较
+git diff HEAD HEAD~1 # 当前commit和前一个commit的比较
 git add <file>       # 添加指定file文件修改更改到暂存区
 git add *            # 添加所有修改和新增文件到暂存区index/stage
 git commit -a -m "changed some files"
@@ -112,7 +113,7 @@ git checkout HEAD <file>       # 使用commit提交的HEAD内容覆盖工作目�
 git checkout -- <file>         # 使用commit提交的当前内容覆盖工作目录file文件，已添加到暂存区index/stage的改动不会被覆盖
 ```
 
-`HEAD`可以指向分支，也可以指向提交commit。执行commit,checkout和merge等都会导致HEAD移动。
+`HEAD`可以指向分支，也可以指向提交commit，存储在.git/HEAD．当指向branch时执行commit,checkout和merge等都会导致HEAD移动，当不指向branch而指向提交commit时，HEAD会处在detached分离/游离状态．
 
 `HEAD` names the ref that you commit to repository. In most cases it's probably refs/heads/master.
 
@@ -130,17 +131,18 @@ git log
 commit id (HEAD -> dev)        # 通过git log也能看出HEAD指向dev分支
 ```
 
-`ORIG_HEAD`存放commit。当进某些危险操作时，如reset,merge或者rebase,git会将HEAD指针原来指向的commit对象的sha-1值保存在ORIG_HEAD文件中。
+`ORIG_HEAD`存放commit。当进某些危险操作时，如reset,merge或者rebase,git会将HEAD指针原来指向的commit对象的sha-1值保存在.git/ORIG_HEAD文件中。
 
 ```git
 git reset --hard ORIG_HEAD     # 可以回退到危险操作之前状态
 ```
 
-`FETCH_HEAD`表示某个branch在服务器上的最新状态。执行过fetch操作的项目都会存在FETCH_HEAD文件，文件中的每一行对应于远程服务器上的一个分支。当前分支指向的FETCH_HEAD就是文件第一行对应的分支。
+`FETCH_HEAD`表示某个branch在服务器上的最新状态。执行过fetch操作的项目都会存在.git/FETCH_HEAD文件，文件中的每一行对应于远程服务器上的一个分支。当前分支指向的FETCH_HEAD就是文件第一行对应的分支。
 
 `detached HEAD` 当执行`git checkout commit`的时候，也就是指向提交，会变为detached(分离的) HEAD的状态。
 
 ```git
+git log --oneline --graph --all   # 以图的方式显示分支历史
 git reflog　　　　　　　　　　 # 显示HEAD移动历史
 git reflog --online            # 以简介的方式显示HEAD变动历史(每一行代表一次移动)
 git checkout fed2b51(sha-1值)  # 将当前位置切换为某次提交
@@ -204,6 +206,8 @@ git merge gitee/master
 ![git tree](https://www.runoob.com/manual/git-guide/img/branches.png)
 
 ```git
+git branch dev           # 创建分支dev
+git checkout dev         # 切换分支到dev
 git checkout -b dev      # 创建一个dev分支，同时切换当前分支到dev分支
 git checkout master      # 切换会master分支
 git branch -d dev        # 删掉dev分支
@@ -216,9 +220,24 @@ git push gitee dev       # 如果不把dev分支推送到远程仓库gitee，dev
 git pull                 # 从远程仓库拉取更新到本地仓库，等价于本地分支获取(fetch)并合并(merge)远端改动．
 git merge dev            # 合并dev分支到当前分支，也可以指定其他分支合并到当前分支
 git diff master dev      # 查看不同分支之间的差异，方便处理冲突conflicts
+
+git merge dev            # 快进式合并(fast-farward merge)，会直接将master分支指向合并分支，会丢失分支信息
+git merge dev --no-ff -m "merge with no-ff" dev   # --no-ff禁用Fast forward模式，-m合并时产生一个新commit.
 ```
 
-- 标签
+藏匿(stashing)
+
+在一个分支上修改之后，如果还没有将修改提交到分支上，此时进行切换分支，那么另一个分支上也能看到新的修改．
+
+所有分支都共用一个工作区．可以使用`git stash`将当前分支的修改会被存到栈中而隐藏起来，这样就可以干净地切换到其他分支.
+
+```git
+git stash                # 隐藏修改到栈中
+git stash list           # 显示隐藏的修改 List the stash entries that you currently have.
+git stash pop            # 恢复之前隐藏的内容
+```
+
+### 标签
 
 为软件发布创建标签，便于记忆与管理．
 
