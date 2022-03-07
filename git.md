@@ -83,6 +83,8 @@ git add <file>       # 添加指定file文件修改更改到暂存区
 git add *            # 添加所有修改和新增文件到暂存区index/stage
 git commit -a -m "changed some files"
 # 将所有被修改或者已删除的且已经被git管理的文档提交到本地仓库。-a不会造成新文件被提交。
+git clean            # Remove untracked files from then working tree.
+git mv file xxx      # Move or rename a file, a directory, or a symlink.直接mv被git认为是删除原有文件后添加一个新文件
 ```
 
 - 暂存区(Index,Stage)，缓存区域，临时保存改动，保存在.git/index文件中．
@@ -112,10 +114,13 @@ git restore <file>             # 撤销(在工作空间但不在暂存区)文件
 git commit -m "版本信息"       # 将暂存区stage/index的内容提交到版本库repository
 git commit -a -m "版本信息"    # 将已跟踪文件的修改直接提交到版本库repository
 git reset HEAD                 # git reset defaults to HEAD，使用HEAD覆盖暂存区index/stage内容，文件内容不受影响
+git reset --hard HEAD@{2}      # 撤销并删除相应的更新
+git reset --hard gitee/master  # 将本地主分支指向gitee/master，所有未提交commit的内容都会被丢弃掉
+git reset --soft HEAD@{3}      # 撤销相应更新，把这些更新的内容放到stage中
 git reset HEAD <file>          # 指定文件file
-git checkout HEAD .            # 使用commit提交的HEAD内容覆盖工作目录所有文件
-git checkout HEAD <file>       # 使用commit提交的HEAD内容覆盖工作目录file文件，会变更文件内容
-git checkout -- <file>         # 使用commit提交的当前内容覆盖工作目录file文件，已添加到暂存区index/stage的改动不会被覆盖
+git checkout HEAD .            # 使用commit提交的HEAD内容覆盖工作目录和暂存区
+git checkout HEAD <file>       # 使用commit提交的HEAD内容覆盖工作目录file文件与暂存区file，会变更文件内容
+git checkout -- <file>         # 使用暂存区file覆盖工作目录file文件，已添加到暂存区index/stage的改动不会被覆盖
 ```
 
 `HEAD`可以指向分支，也可以指向提交commit，存储在.git/HEAD．当指向branch时执行commit,checkout和merge等都会导致HEAD移动，当不指向branch而指向提交commit时，HEAD会处在detached分离/游离状态．
@@ -147,6 +152,8 @@ git reset --hard ORIG_HEAD     # 可以回退到危险操作之前状态
 `detached HEAD` 当执行`git checkout commit`的时候，也就是指向提交，会变为detached(分离的) HEAD的状态。
 
 ```git
+git log                        # show commit logs
+git blame <file>               # show what reision and author last modified each line of a line.按文件查看历史记录
 git log --oneline --graph --all   # 以图的方式显示分支历史
 git reflog　　　　　　　　　　 # 显示HEAD移动历史
 git reflog --online            # 以简介的方式显示HEAD变动历史(每一行代表一次移动)
@@ -187,7 +194,9 @@ gitee  git@gitee.com:zhudingsuifeng/restart.git (push)
 git push gitee master    # 将本地版本库改动推送到远程版本库gitee的master分支
 git clone -o gitee git@gitee.com:zhudingsuifeng/restart.git ant   # clone 远程版本库到本ant目录，并设置远程版本库为gitee
 git pull gitee master    # merge into the current branch the remote repository gitee and branch master
+git pull                 # 从远程仓库拉取更新到本地仓库，等价于本地分支获取(fetch)并合并(merge)远端改动．
 git fetch gitee          # 下面两条命令效果等同于上面一条
+git fetch gitee <master>:<dev>   # 获取远程库gitee的master分支到本地dev分支
 git merge gitee/master
 ```
 
@@ -211,33 +220,33 @@ git merge gitee/master
 
 ![change file status](https://images2017.cnblogs.com/blog/63651/201709/63651-20170909091456335-1787774607.jpg)
 
-### 分支
+#### reset/revert/checkout
+
+### 分支管理
 
 分支使用来隔离不同开发路径的方式，创建仓库时，master是本地仓库默认分支．通常是在其他(dev)分支上开发，完成后再将功能分支合并到主分支上．
 
 ![git tree](https://www.runoob.com/manual/git-guide/img/branches.png)
 
 ```git
+git branch               # 列出本地分支
+git branch -r            # 列出远程分支
+git branch -a            # 列出所有分支
 git branch dev           # 创建分支dev
+git branch dev <commit>  # 创建分支dev指向特定commit快照
+git branch --track <branch> <remote-branch>   # 创建分支并与制定的远程分支建立追踪关系
 git checkout dev         # 切换分支到dev
 git checkout -b dev      # 创建一个dev分支，同时切换当前分支到dev分支
-git checkout master      # 切换会master分支
+git checkout master      # 切换回master分支
+git checkout -           # 切换到上一个分支
+git diff master dev      # 查看不同分支之间的差异，方便处理冲突conflicts
+git merge dev            # 合并dev分支到当前分支，快进式合并(fast-farward merge)，会直接将master分支指向合并分支，会丢失分支信息
+git merge dev --no-ff -m "merge with no-ff" dev   # --no-ff禁用Fast forward模式，-m合并时产生一个新commit.
 git branch -d dev        # 删掉dev分支
 git push gitee dev       # 如果不把dev分支推送到远程仓库gitee，dev分支就是本地私有的，对其他人是未知的
 ```
 
-### 更新与合并
-
-```git
-git pull                 # 从远程仓库拉取更新到本地仓库，等价于本地分支获取(fetch)并合并(merge)远端改动．
-git merge dev            # 合并dev分支到当前分支，也可以指定其他分支合并到当前分支
-git diff master dev      # 查看不同分支之间的差异，方便处理冲突conflicts
-
-git merge dev            # 快进式合并(fast-farward merge)，会直接将master分支指向合并分支，会丢失分支信息
-git merge dev --no-ff -m "merge with no-ff" dev   # --no-ff禁用Fast forward模式，-m合并时产生一个新commit.
-```
-
-藏匿(stashing)
+### 藏匿(stashing)
 
 在一个分支上修改之后，如果还没有将修改提交到分支上，此时进行切换分支，那么另一个分支上也能看到新的修改．
 
@@ -245,36 +254,27 @@ git merge dev --no-ff -m "merge with no-ff" dev   # --no-ff禁用Fast forward模
 
 ```git
 git stash                # 隐藏修改到栈中
+git checkout -b dev      # 应藏当前工作目录修改后，切换分支得到一个全新干净分支
 git stash list           # 显示隐藏的修改 List the stash entries that you currently have.
 git stash pop            # 恢复之前隐藏的内容
 ```
 
 ### 标签
 
-为软件发布创建标签，便于记忆与管理．
+为软件发布创建标签，便于记忆与管理．与commit快照绑定的有意义的名字.
 
 ```git
-git tag 1.0.0 id         # 创建提交内容的版本号，id是内容的对应ID
-git log                  # 获取提交内容的ID
-```
-
-### 替换本地改动
-
-```git
-git checkout -- <filename>   # 使用HEAD中最新内容替换掉工作目录中的文件filename．已经添加到暂存区index的改动或者新文件都不受影响
-git remote add gitee gitee git@gitee.com:zhudingsuifeng/ant.git
-git fetch gitee <master>:<master>   # 获取服务器上最新版本
-git reset --hard gitee/master       # 将本地主分支指向gitee/master，所有未提交commit的内容都会被丢弃掉
-```
-
-
-### common Git commands uesd in various situations
-
-#### start a working area (see also: git help tutorial)
-
-```git
-	clone			Clone a repository into a new directory
-	init 			Create an empty Git repository or reinitialize an existing one
+git tag 1.0              # 创建标签，默认打在最新提交的commit快照
+git tag                  # 查看tag标签
+git log --oneline        # 获取提交commit内容的sha-1值
+git tag 1.1 <commit>     # 给指定commit提交快照打标签
+git show 1.1             # 查看标签具体信息
+git tag -a 1.2 -m "version 1.2 released" <commit>   # -a指定标签名,-m附加信息
+git push <gitee> <tagname>   # 推送标签
+git push <gitee> --tags  # 推送所有标签
+git tag -d <tagname>     # 删除指定本地标签
+git push <gitee>:refs/tags/<tagname>   # 删除远程标签，需要先删除本地标签
+git blame <file>         # 按照文件查看commit提交记录
 ```
 
 ### git远程链接
