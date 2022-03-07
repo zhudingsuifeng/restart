@@ -60,9 +60,13 @@ git clone -o gitee https://gitee.com/zhudingsuifeng/restart.git ant
 
 git本地有三个工作区域:工作目录(working directory)，暂存区(stage/index)，本地仓库(repository/git directory)．如果加上远程的git仓库(remote repository)就可以分为四个工作区域．
 
+![git tree](https://www.runoob.com/manual/git-guide/img/trees.png)
+
 使用`git init`新建仓库之后，当前目录就是工作区(working directory).工作区下的隐藏目录.git是版本库/本地仓库(repository).本地仓库中的index文件(.git/index)就是暂存区(index/stage).版本库中还包含git自动创建的第一个分支master，以及指向master的指针/游标(HEAD).
 
-![git tree](https://www.runoob.com/manual/git-guide/img/trees.png)
+git四个区域，工作目录(working directory)，暂存区(index/stage)，资源库(repository/git direcotry)，远程仓库(remote directory)是可以互相转换的．
+
+![git directory](https://www.runoob.com/wp-content/uploads/2015/02/git-command.jpg)
 
 - 工作目录(workspace/working directory)，执行`git init`的当前目录，实际持有文件。
 
@@ -108,6 +112,7 @@ git restore <file>             # 撤销(在工作空间但不在暂存区)文件
 git commit -m "版本信息"       # 将暂存区stage/index的内容提交到版本库repository
 git commit -a -m "版本信息"    # 将已跟踪文件的修改直接提交到版本库repository
 git reset HEAD                 # git reset defaults to HEAD，使用HEAD覆盖暂存区index/stage内容，文件内容不受影响
+git reset HEAD <file>          # 指定文件file
 git checkout HEAD .            # 使用commit提交的HEAD内容覆盖工作目录所有文件
 git checkout HEAD <file>       # 使用commit提交的HEAD内容覆盖工作目录file文件，会变更文件内容
 git checkout -- <file>         # 使用commit提交的当前内容覆盖工作目录file文件，已添加到暂存区index/stage的改动不会被覆盖
@@ -192,12 +197,19 @@ git merge gitee/master
 
 #### 文件状态
 
-已修改(modified)表示修改了文件，但还没保存到版本库中．
-已暂存(staged)表示对已修改文件的当前版本做了标记，使之包含在下次提交中．
-已提交(committed)表示数据已经保存在本地版本库中．
+与工作区域相对应的就是文件状态，文件状态的转变也就意味着文件在工作区域中的移动．
 
+![file status](https://git-scm.com/book/en/v2/book/02-git-basics/images/lifecycle.png)
 
+- 未跟踪(untracked)，文件在文件夹中，但是并没有加入到git库，不参与版本控制．通过`git add`状态变为stage.
 
+- 未修改(unmodify)，文件已经入库，未修改，即版本库中文件commit内容与当前文件内容一致．这种类型的文件有两种去处，如果被修改，变为modified，如果使用`git rm`移出版本库，则成为untracked文件，其实文件被删除了．
+
+- 已修改(modified)表示修改了文件，并未做其他操作．这个文件有两个去处，通过`git add`可进入暂存staged状态，使用`git checkout`则丢弃修改，返回到unmodify状态，`git checkout`即从库中取出文件，覆盖当前修改．
+
+- 已暂存(staged)表示对已修改文件的当前版本做了标记，使之包含在下次提交中．执行`git commit`则将修改同步到库中，这时库中的文件和本地文件又变为一致，文件为unmodify状态．执行`git reset HEAD <file>`则取消暂存，文件状态变为modified.
+
+![change file status](https://images2017.cnblogs.com/blog/63651/201709/63651-20170909091456335-1787774607.jpg)
 
 ### 分支
 
