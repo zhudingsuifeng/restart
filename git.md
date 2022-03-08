@@ -220,8 +220,6 @@ git merge gitee/master
 
 ![change file status](https://images2017.cnblogs.com/blog/63651/201709/63651-20170909091456335-1787774607.jpg)
 
-#### reset/revert/checkout
-
 ### 分支管理
 
 分支使用来隔离不同开发路径的方式，创建仓库时，master是本地仓库默认分支．通常是在其他(dev)分支上开发，完成后再将功能分支合并到主分支上．
@@ -241,10 +239,76 @@ git checkout master      # 切换回master分支
 git checkout -           # 切换到上一个分支
 git diff master dev      # 查看不同分支之间的差异，方便处理冲突conflicts
 git merge dev            # 合并dev分支到当前分支，快进式合并(fast-farward merge)，会直接将master分支指向合并分支，会丢失分支信息
+git cherry-pick <commit> # 选择一个提交commit，合并进当前分支
 git merge dev --no-ff -m "merge with no-ff" dev   # --no-ff禁用Fast forward模式，-m合并时产生一个新commit.
 git branch -d dev        # 删掉dev分支
+git push gitee --delete <branch>   # 删除远程分支
+git branch -dr <remote/branch>
 git push gitee dev       # 如果不把dev分支推送到远程仓库gitee，dev分支就是本地私有的，对其他人是未知的
 ```
+
+每次提交，git都把他们串成一条时间线，这条时间先就是一个分支．git默认分支master叫做主分支．HEAD不是指向提交，而是指向master，master才是指向提交，HEAD指向的是当前分支．
+
+开始时，master分支是一条线，git用master指向最新的提交，再用HEAD指向master，就能确定当前分支，以及当前分支的提交点．
+
+![branch_master](https://img2018.cnblogs.com/blog/63651/201809/63651-20180920210647291-1528543055.png)
+
+每次提交，master分支都会向前移动一步，随着不断提交，master分支的线也越来越长．
+
+![branch_commit](https://img2018.cnblogs.com/blog/63651/201809/63651-20180920210256578-751843766.gif)
+
+`git checkout -b dev` 创建dev分支，指向master相同的提交，再把HEAD指向dev分支．
+
+![branch_dev](https://cdn.liaoxuefeng.com/files/attachments/919022363210080/l)
+
+使用`git checkout <branch>`切换分支，`git checkout -- <file>`撤销修改，容易混淆，更推荐使用switch命令切换分支．
+
+```git
+git switch -c dev     # --create Create a new branch named dev before switching to the branch.
+git switch dev        # 切换到已有分支
+```
+
+`git commit -m 'D'` 对工作区的修改提交后，dev指针往前移动，而master指针不变．
+
+![dev_commit](https://cdn.liaoxuefeng.com/files/attachments/919022387118368/l)
+
+```git
+git checkout master   # 先切换到master分支
+git merge dev         # 将dev分支合并到master分支
+```
+
+![branch_merge](https://cdn.liaoxuefeng.com/files/attachments/919022412005504/0)
+
+合并分支之默认会采用`Fast forward`模式，这种模式，将dev分支合并到master分支后删除dev分支，会丢失掉dev分支信息．
+
+可以通过`--no-ff`方式强制禁用`Fast forward`模式，git就会在merge时生成一个新的commit，从分支历史上就可以看出分支信息．
+
+```git 
+git switch -c dev
+git add readme.md
+git comit -m "add merge"
+git switch master
+git merge --no-ff -m "merge with no-ff" dev   # -m commit描述
+git log --graph --pretty=oneline
+```
+
+![merge --no-ff](https://cdn.liaoxuefeng.com/files/attachments/919023225142304/0)
+
+`git branch -d dev` 删除dev分支就是吧dev指针给删掉，删掉dev分之后又回到只剩下一条master分支．
+
+![branch_delete](https://cdn.liaoxuefeng.com/files/attachments/919022479428512/0)
+
+分支创建，切换，合并，删除
+
+![branch_all](https://img2018.cnblogs.com/blog/63651/201809/63651-20180920210908347-486995158.gif)
+
+当不同分支对同一文件进行修改并提交后，合并两个分支，容易产生冲突conflict.
+
+![branch_conflict](https://cdn.liaoxuefeng.com/files/attachments/919023000423040/0)
+
+git用`<<<<<<<<`，`=======`，`>>>>>>>>`来标记不同分支的内容，解决冲突后commit形成新的唯一commit.
+
+![conflict_commit](https://cdn.liaoxuefeng.com/files/attachments/919023031831104/0)
 
 ### 藏匿(stashing)
 
@@ -276,6 +340,26 @@ git tag -d <tagname>     # 删除指定本地标签
 git push <gitee>:refs/tags/<tagname>   # 删除远程标签，需要先删除本地标签
 git blame <file>         # 按照文件查看commit提交记录
 ```
+
+### git常用
+
+```git
+git log                               # 显示当前分支版本历史
+git log --stat                        # 显示commit历史及每次commit发生变更的文件
+git log -S <keyword>                  # 根据关键词keyword搜索commit提交历史
+git log --follow <file>               # 显示file文件的版本历史，包括文件名
+git whatchanged <file>                # 比git log --follow <file> 信息更丰富
+git blame <file>                      # 显示用户对指定文件的修改记录
+git shortlog                          # 显示提交过的用户和用户commit message
+git diff                              # 显示暂存区和工作区的差异
+git diff --cached <file>              # 显示暂存区和上一个commit的差异
+git diff HEAD                         # 显示工作区与当前分支最新commit之间的差异
+git diff --shortstat "@{0 day ago}"   # 显示今天写了多少行代码
+git show <commit>                     # 显示commit提交的元数据和内容变化
+git show --name-only <commit>         # 显示commit提交发生变化的文件
+```
+
+#### reset/revert/checkout/fetch/pull
 
 ### git远程链接
 
