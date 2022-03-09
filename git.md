@@ -177,11 +177,21 @@ git checkout -b dev            # 从某次提交创建分支branch，分叉
 命令将本地仓库与远程仓库相关连，之后再push推送改动就可以了．
 
 ```git
-git remote rm gitee                 # remove
-git remote remove gitee             # 删除本地指定的远程地址
-git remote add gitee git@gitee.com:zhudingsuifeng/restart.git  # 关联新的远程仓库
-git remote set-head gitee master    # Sets or deletes the default branch for the named remote.
-git fetch gitee master              # 将远程仓库gitee的分支master内容拉取到本地仓库
+git remote               # 列出所有远程主机
+
+gitee
+github
+git remote show gitee    # 显示远程主机详细信息
+
+* 远程 gitee
+  获取地址：git@gitee.com:zhudingsuifeng/restart.git
+  推送地址：git@gitee.com:zhudingsuifeng/restart.git
+  HEAD 分支：master
+  远程分支：
+    master 已跟踪
+  为 'git push' 配置的本地引用：
+    master 推送至 master (最新)
+git remote rename <gitee> <gitdev>   # 修改远程主机名
 git branch -r            # 查看远程分支
 
   gitee/master
@@ -191,6 +201,11 @@ git remote -v            # 显示远程网址
 gitee  git@gitee.com:zhudingsuifeng/restart.git (fetch)
 gitee  git@gitee.com:zhudingsuifeng/restart.git (push)
 
+git remote rm gitee                 # remove
+git remote remove gitee             # 删除本地指定的远程地址
+git remote add gitee git@gitee.com:zhudingsuifeng/restart.git  # 关联新的远程仓库
+git remote set-head gitee master    # Sets or deletes the default branch for the named remote.
+git fetch gitee master              # 将远程仓库gitee的分支master内容拉取到本地仓库
 git push gitee master    # 将本地版本库改动推送到远程版本库gitee的master分支
 git clone -o gitee git@gitee.com:zhudingsuifeng/restart.git ant   # clone 远程版本库到本ant目录，并设置远程版本库为gitee
 git pull gitee master    # merge into the current branch the remote repository gitee and branch master
@@ -233,6 +248,8 @@ git branch -a            # 列出所有分支
 git branch dev           # 创建分支dev
 git branch dev <commit>  # 创建分支dev指向特定commit快照
 git branch --track <branch> <remote-branch>   # 创建分支并与制定的远程分支建立追踪关系
+git checkout -b dev gitee/dev                 # 在远程分支的基础上创建本地分支
+git branch --set-upstream-to=gitee/dev dev    # 指定本地dev分支与远程gitee/dev分支的关联
 git checkout dev         # 切换分支到dev
 git checkout -b dev      # 创建一个dev分支，同时切换当前分支到dev分支
 git checkout master      # 切换回master分支
@@ -245,6 +262,7 @@ git branch -d dev        # 删掉dev分支
 git push gitee --delete <branch>   # 删除远程分支
 git branch -dr <remote/branch>
 git push gitee dev       # 如果不把dev分支推送到远程仓库gitee，dev分支就是本地私有的，对其他人是未知的
+git rebase               # Reapply commits on top of another base tip
 ```
 
 每次提交，git都把他们串成一条时间线，这条时间先就是一个分支．git默认分支master叫做主分支．HEAD不是指向提交，而是指向master，master才是指向提交，HEAD指向的是当前分支．
@@ -298,6 +316,10 @@ git log --graph --pretty=oneline
 
 ![branch_delete](https://cdn.liaoxuefeng.com/files/attachments/919022479428512/0)
 
+master分支是非常稳定的，通常用来发布版本．一般在dev分支进行开发，稳定的内容再合并到master分支．
+
+每个人都有自己的分支，实现了模块功能后合并到dev分支．
+
 分支创建，切换，合并，删除
 
 ![branch_all](https://img2018.cnblogs.com/blog/63651/201809/63651-20180920210908347-486995158.gif)
@@ -344,6 +366,7 @@ git blame <file>         # 按照文件查看commit提交记录
 ### git常用
 
 ```git
+git status                            # 查看当前文件状态.Changes to be committed:文件是暂存状态(即将提交的变更)
 git log                               # 显示当前分支版本历史
 git log --stat                        # 显示commit历史及每次commit发生变更的文件
 git log -S <keyword>                  # 根据关键词keyword搜索commit提交历史
@@ -351,13 +374,18 @@ git log --follow <file>               # 显示file文件的版本历史，包括
 git whatchanged <file>                # 比git log --follow <file> 信息更丰富
 git blame <file>                      # 显示用户对指定文件的修改记录
 git shortlog                          # 显示提交过的用户和用户commit message
+git ls-files --stage                  # 查看index文件内容100644普通文件644权限
+
 git diff                              # 显示暂存区和工作区的差异
 git diff --cached <file>              # 显示暂存区和上一个commit的差异
 git diff HEAD                         # 显示工作区与当前分支最新commit之间的差异
 git diff --shortstat "@{0 day ago}"   # 显示今天写了多少行代码
 git show <commit>                     # 显示commit提交的元数据和内容变化
 git show --name-only <commit>         # 显示commit提交发生变化的文件
+
 ```
+
+![git diff 不同工作区之间的比较](https://img-blog.csdnimg.cn/img_convert/e3acce52aafa2acf1406fd0fe1ce3114.png)
 
 #### reset/revert/checkout/fetch/pull
 
