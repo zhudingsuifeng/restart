@@ -88,7 +88,7 @@ $ pacman -Sg             # 查询所有包组 --groups
 $ pacman -Sg base-devel  # 查询组base-devel所包含的软件包
 $ pacman -Ss pacman      # 搜索pacman相关的包，包组一般显示在包名后面的(括号中)
 $ pacman -Si pacman      # 从数据库中搜索pacman的信息
-# pacman -S git          # Down load and install app including dependencies.
+# pacman -S git          # Download and install app including dependencies.
 # pacman -Sd git         # 忽略依赖问题，安装git
 # pacman -Sf git         # 强制安装git包
 # pacman -Sy             # 仅同步源，从服务器下载新的软件包数据库
