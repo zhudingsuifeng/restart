@@ -211,8 +211,8 @@ git clone -o gitee git@gitee.com:zhudingsuifeng/restart.git ant   # clone 远程
 git pull gitee master    # merge into the current branch the remote repository gitee and branch master
 git pull                 # 从远程仓库拉取更新到本地仓库，等价于本地分支获取(fetch)并合并(merge)远端改动．
 git fetch gitee          # 下面两条命令效果等同于上面一条
-git fetch gitee <master>:<dev>   # 获取远程库gitee的master分支到本地dev分支
 git merge gitee/master
+git fetch gitee <master>:<dev>   # 获取远程库gitee的master分支到本地dev分支
 ```
 
 `git fetch`是将远程主机的最新内容拉到本地，用户再检查了以后决定是否合并到本地分支中。
@@ -379,9 +379,96 @@ git ls-files --stage                  # 查看index文件内容100644普通文�
 git diff                              # 显示暂存区和工作区的差异
 git diff --cached <file>              # 显示暂存区和上一个commit的差异
 git diff HEAD                         # 显示工作区与当前分支最新commit之间的差异
+git diff
+
+diff --git a/ttt.md b/ttt.md          # 第一行表示a版本的ttt.md(变动前)与b版本的ttt.md(变动后)比较．
+index 4d4dd45..ec4357c 100644         # 第二行index后面两个文件hash值(index区的4d4dd45，与工作区的ec4357c对象进行比较)
+                                      # 100644六位数字是对象的模式mode(100代表普通文件，644代表文件权限)
+--- a/ttt.md                          # ---表示变动前的版本
++++ b/ttt.md                          # +++表示变动后的版本
+@@ -7,3 +7,4 @@ dev                   # -修改前，7,3第7行开始的3行，+修改后，7,4第7行开始4行
+
+ >>>>>>> dev
+ 4444444444                           # 没有变动
++5555555555                           # + 增加部分
+                                      # - 减少部分
+git hash-object ttt.md                # 工作目录文件ttt.md的hash值，前7位是diff中index的右边hash
+ec4357c135686fd093b57e091da5ca846af05b54
+git ls-files --stage                  # 显示暂存区内容的对象名称，包含文件模式，hash
+100644 f2b6f80491dc889f88b436422fea7427ae1630a7 0       readme.md
+100644 4d4dd4535fbab8c3edbdb1eab429bcf3e01fcbcd 0       ttt.md    # hash前7位是diff中显示的左边hash
+git ls-files --stage <file>           # 指定文件
+git ls-tree HEAD                      # List the contents of a tree object
+100644 blob f2b6f80491dc889f88b436422fea7427ae1630a7    readme.md
+100644 blob 85c6d03b5bba69142904ae2cb11d7c53dd44a6e3    ttt.md    # commit的hash
+
+git diff --cached <ttt.md>            # 比较commit(HEAD)和stage的区别
+
+diff --git a/ttt.md b/ttt.md
+index 85c6d03..4d4dd45 100644         # 85c6d03HEAD的hash，4d4dd45stage的hash
+--- a/ttt.md
++++ b/ttt.md
+@@ -6,3 +6,4 @@
+ dev
+ 
+ >>>>>>> dev
++4444444444
+
+git diff HEAD <ttt.md>                # 比较commit(HEAD)和working space的区别
+
+diff --git a/ttt.md b/ttt.md
+index 85c6d03..ec4357c 100644         # 85c6d03HEAD的hash，ec4357c working tree的hash
+--- a/ttt.md
++++ b/ttt.md
+@@ -6,3 +6,5 @@
+ dev
+
+ >>>>>>> dev
++4444444444
++5555555555
+
 git diff --shortstat "@{0 day ago}"   # 显示今天写了多少行代码
 git show <commit>                     # 显示commit提交的元数据和内容变化
 git show --name-only <commit>         # 显示commit提交发生变化的文件
+
+git log --oneline                     # This is a shorthand for "--pretty=oneline --abbrev-commit" used together.
+git log --oneline --follow <file>     # 
+git log --oneline                     # Pretty-print the comtents of tne commit logs in a given format.
+git log --oneline [tab能联想]         # --abbrev-commit Show a prefix that names the object uniquely.
+
+3dc1b85 (HEAD -> master) merge
+d4debae (dev) dev
+10c9b0d 3333333
+cfe202b tttt
+b27c1f9 tttttttt
+5f7a655 ttttttttt
+bb404b4 hhhhhhh
+77bd726 hhhhhhhh
+69e2ba7 (gitee/master) tttttttttttttt
+e23cb10 Merge branch 'dev'
+416f0cc init
+63efdc7 HEAD
+62ffb67 change
+f611455 init
+
+git log 77bd726..b27c1f9              # 显示两次commit hash之间(不包括左边hash，更早的hash)的commit log
+
+git restore                           # Restore working tree files 
+git restore .                         # To restore all files in the current directory
+rm <file>
+git restore <file>                    # retore <file> from the index，用index恢复working space
+git restore --staged <file>           # To restore a <file> in the index to match the version in HEAD，用master中commit的内容恢复index
+git restore --source=HEAD --staged --worktree <file>   # both the index and the working tree用master中commit同时恢复index和workding tree
+git restore --source master~2 <file>  # 使用指定commit的内容恢复working tree
+```
+
+### git内部原理
+
+```git
+
+git rev-list            # Lists commit objects in reverse chronalogical order 
+git cat-file            # Provide content or type and size information for repository objects
+
 
 ```
 
