@@ -472,6 +472,120 @@ git cat-file            # Provide content or type and size information for repos
 
 ```
 
+### git对象
+
+每个对象(object)包括三个部分:类型，大小和内容．大小就是指内容的大小，内容取决与对象的类型，有四种类型的对象:blob,tree,commit和tag.
+
+![blob object](http://gitbook.liuhui998.com/assets/images/figure/object-blob.png)
+
+blob对象通常用来存储文件的内容，可以使用`git show <SHA1>`查看一个blob对象里的内容．
+
+blob对象就是一块二进制数据，如果两个文件在一个目录树中有同样的数据内容，那么他们将会共享同一个blob对象．
+
+![tree object](http://gitbook.liuhui998.com/assets/images/figure/object-tree.png)
+
+tree对象有一床指向blob对象或者其他tree对象的指针，他一般用来表示内容之间的目录层次关系．
+
+`git show <SHA1>`命令同样可以查看tree对象，但是`git ls-tree <SHA1>`更详细．
+
+```git
+git ls-tree <3dc1b85>
+
+100644 blob f2b6f80491dc889f88b436422fea7427ae1630a7    readme.md
+100644 blob 85c6d03b5bba69142904ae2cb11d7c53dd44a6e3    ttt.md
+```
+
+tree对象包含一串条目，包括:mode,对象类型，SHA1值和文件名．
+
+![commit object](http://gitbook.liuhui998.com/assets/images/figure/object-commit.png)
+
+commit对象指向一个tree对象，并且带有相关的描述信息．
+
+一个commit有以下部分组成，
+
+- tree对象，tree对象的SHA1签名，代表着目录在某一时间点的内容．
+
+- parent父对象，提交commit的SHA1签名代表这当前提交前一步的项目历史，commit对象可以有多个parent对象(合并提交时).如果一个提交没有父对象，我们就叫他根提交root commit.每个项目必须至少有一个根提交．
+
+- author作者，做了此次修改的人的名字，还有修改日期．
+
+- committer提交者，实际创建提交commit的人的名字，提交日期，author and committer maybe not 同一个人．
+
+- 注释，用来描述此次提交．
+
+```git
+git show -s --pretty=raw 
+
+commit 3dc1b85ffc02bf74a0533b5fc6e2c106963029d8
+tree 09143275c5490e78c9b5fc78a8206f89e601ca8b
+parent 10c9b0d484a99e1121e49635fa0bfccd68a0055c
+parent d4debae5c2749bff0a01a4330ca2b65813ba1e9a
+author zhudingsuifeng <1002557401@qq.com> 1646837948 +0800
+committer zhudingsuifeng <1002557401@qq.com> 1646837948 +0800
+
+    merge
+git log --pretty=raw    # Pretty-print the contents of the commit logs in a given format.
+
+commit 3dc1b85ffc02bf74a0533b5fc6e2c106963029d8
+tree 09143275c5490e78c9b5fc78a8206f89e601ca8b
+parent 10c9b0d484a99e1121e49635fa0bfccd68a0055c
+parent d4debae5c2749bff0a01a4330ca2b65813ba1e9a
+author zhudingsuifeng <1002557401@qq.com> 1646837948 +0800
+committer zhudingsuifeng <1002557401@qq.com> 1646837948 +0800
+
+    merge
+
+commit d4debae5c2749bff0a01a4330ca2b65813ba1e9a
+tree e5d98cd1a5ad887bc35ff615e6d060f7d1356c32
+parent 69e2ba7c92ecc53cae703315dc8b65ec1a9c50d5
+author zhudingsuifeng <1002557401@qq.com> 1646754316 +0800
+committer zhudingsuifeng <1002557401@qq.com> 1646754316 +0800
+
+    dev
+```
+
+对象模型关系
+
+```git
+$>tree
+.
+|-- README
+`-- lib
+    |-- inc
+    |   `-- tricks.rb
+    `-- mylib.rb
+
+2 directories, 3 files
+```
+
+![object relationship](http://gitbook.liuhui998.com/assets/images/figure/objects-example.png)
+
+每个目录都创建了tree对象，每个文件都创建了blob对象，commit对象指向tree对象．
+
+tag标签对象
+
+![tag object](http://gitbook.liuhui998.com/assets/images/figure/object-tag.png)
+
+一个标签对象包括一个对象名(SHA1签名),对象类型，标签名，标签创建人的名字，还有可能包含签名信息．
+
+```git
+git tag v1.0                 # 创建tag,默认打在最新commit
+git tag -a v1.1 -m "tag message" <commit>
+git show v1.0                # 显示v1.0详细信息
+git cat-file tag v1.0        # 查看tag object信息
+
+object 3dc1b85ffc02bf74a0533b5fc6e2c106963029d8
+type commit
+tag v1.0
+tagger zhudingsuifeng <1002557401@qq.com> 1647273270 +0800
+
+tag test
+```
+
+```git
+git cat-file tag 
+```
+
 ![git diff 不同工作区之间的比较](https://img-blog.csdnimg.cn/img_convert/e3acce52aafa2acf1406fd0fe1ce3114.png)
 
 #### reset/revert/checkout/fetch/pull
