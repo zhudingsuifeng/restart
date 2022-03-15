@@ -10,6 +10,12 @@ See gittutorial to get started, the see giteveryday for a useful minimum set of 
 
 After you mastered the basic concepts, you can come back to this page to learn what commands Git offers. You can learn more about individual Git commands with "git help command". gitcli manual page gives you an overview of the command-line command syntax.
 
+git是一个内容寻址文件系统(content addressable file system)．git的核心部分是一个简单的键值对数据库(key-value data store).
+
+可以向数据库插入任意类型的内容，并返回一个键值，通过该键值可以再次检索该内容．这些数据全部存储在objects目录里．
+
+key是一个hash,hash前两个字符用于命名子目录，余下38个字符则用作文件名．
+
 ### git tutorial
 
 **所有版本控制系统只能跟踪文本文件的改动**
@@ -17,6 +23,8 @@ After you mastered the basic concepts, you can come back to this page to learn w
 Git是一个分布式版本控制系统，区别于客户端-服务器式的集中式版本控制系统.
 
 Github就是一个方便交换修改而非必须的"中心服务器"．
+
+.git目录中，objects目录存储所有数据内容(hash)，refs目录存储指向数据(分支)的提交对象的指针(commit hash)，HEAD文件指示目前被检出的分支，index文件保存暂存区信息(git ls-files --stage).
 
 ### git配置
 
@@ -476,6 +484,54 @@ git cat-file            # Provide content or type and size information for repos
 
 每个对象(object)包括三个部分:类型，大小和内容．大小就是指内容的大小，内容取决与对象的类型，有四种类型的对象:blob,tree,commit和tag.
 
+```git
+echo 'hello git' |git hash-object --stdin     # 获取'hello git'对应hash
+git ls-files --stage index.txt                # 显示index.txt文件对应hash
+100644 8d0e41234f24b6da002d962a26c2495ea16a425f 0       index.txt
+git cat-file -p 8d0e41234f24b6da002d962a26c2495ea16a425f   # 查看hash对应的文件内容hello git
+```
+
+`git add`将文件内容hash的blob object对象保存到.git/objects，将index保存到staging area
+
+为文件创建hash对象的时候，git不关心文件名，只关心文件里面的内容．
+
+```git
+echo 'hello git'>index.txt   # 高层命令实现
+git add index.txt
+echo 'hello git'|git hash-object -w --stdin   # 底层命令实现 -w 存储数据对象
+git update-index --add --cacheinfo 100644 8d0e41234f24b6da002d962a26c2495ea16a425f   # 100644普通文件，100755可执行文件，120000符号链接
+git commit -m 'commit'               # git在commit的时候创建tree对象，其实是把索引转化成tree对象
+git log --oneline
+75bd1d1 (HEAD -> master) commit
+git cat-file -t 75bd1d1              # 查看object type，commit
+git cat-file -p 75bd1d1
+tree 7d966033536d6e90dd262ea8e10f7f8f13a06645
+parent d181b1f5e5c02174eae932ef8b072d32bfbf62d9
+author zhudingsuifeng <1002557401@qq.com> 1647346702 +0800
+committer zhudingsuifeng <1002557401@qq.com> 1647346702 +0800
+
+commit
+
+git cat-file -t 7d96603              # tree
+git cat-file -p 7d96603
+100644 blob 8d0e41234f24b6da002d962a26c2495ea16a425f    index.txt
+100644 blob f2b6f80491dc889f88b436422fea7427ae1630a7    readme.md
+100644 blob ec4357c135686fd093b57e091da5ca846af05b54    ttt.md
+
+cat .git/refs/heads/master           # 75bd1d1ef153b85e716e85f33e35f1369128782c
+git cat-file -p HEAD                 # HEAD指向master，所以显示内容相同
+git cat-file -p master
+tree 7d966033536d6e90dd262ea8e10f7f8f13a06645
+parent d181b1f5e5c02174eae932ef8b072d32bfbf62d9
+author zhudingsuifeng <1002557401@qq.com> 1647346702 +0800
+committer zhudingsuifeng <1002557401@qq.com> 1647346702 +0800
+
+commit
+```
+HEAD里面的内容是master，master内容是当前ref，当前ref内容是commit object hash，commit对象内容是tree object hash，tree对象内容是文件夹(tree object)/文件(blob object)信息，而blob对象存储文件爱你具体内容．
+
+commit提交时，整个状态对应关系是确定的，所以说commit对象就是当前系统的快照snapshot.
+
 ![blob object](http://gitbook.liuhui998.com/assets/images/figure/object-blob.png)
 
 blob对象通常用来存储文件的内容，可以使用`git show <SHA1>`查看一个blob对象里的内容．
@@ -582,13 +638,62 @@ tagger zhudingsuifeng <1002557401@qq.com> 1647273270 +0800
 tag test
 ```
 
-```git
-git cat-file tag 
-```
-
 ![git diff 不同工作区之间的比较](https://img-blog.csdnimg.cn/img_convert/e3acce52aafa2acf1406fd0fe1ce3114.png)
 
 #### reset/revert/checkout/fetch/pull
+
+修改了workding directory里的文件，git会发现working directory的内容和index的内容不一致．
+`git status`  # Changes not staged for commit
+
+文件仅仅changed是不能commit的，git要求只能提交index里的内容．
+`git add`将changed的内容同步到index区域．
+`git status`  # Changes to be committed
+
+`git commit`后HEAD的状态和index区域以及workding directory内容一致．
+
+reset使用来修改提交历史的，如果你想撤回已提交的内容，可以使用`git revert`或者`git reset`.
+
+![reset and revert](https://image-static.segmentfault.com/281/097/2810977273-57a4836213ad0_fix732)
+
+`git reset`会修改版本历史，会丢弃掉一些版本历史．而`git revert`是根据commit逆向生成一个新的commit，不会破坏版本历史．
+
+**commit被push到远程仓库，一般不会reset，不然会影响其他人的开发**
+
+不带文件参数的reset影响的是不同区域内的所有内容．`git reset`有三个不同的参数,--soft, --mixed, --hard
+
+```git
+working index HEAD target         working index HEAD
+----------------------------------------------------
+  A       B     C    D     --soft   A       B     D
+                           --mixed  A       D     D
+                           --hard   D       D     D
+                           --merge (disallowed)
+
+working index HEAD target         working index HEAD
+----------------------------------------------------
+  A       B     C    C     --soft   A       B     C
+                           --mixed  A       C     C
+                           --hard   C       C     C
+                           --merge (disallowed)
+```
+
+带文件参数的reset不会影响HEAD，只会将commit里对应文件内容回放到index区域，没有了所谓--hard,--soft.
+
+```git
+git reset --mixed HEAD <file>   # 将HEAD文件file内容回放到index,并且HEAD不会移动
+git reset <file>                # 等效
+git reset <hash> <file>         # 将index内文件恢复到指定版本，可以直接commit
+```
+
+checkout与reset --hard作用相似，但有以下不同
+
+1. reset 会覆盖workding directory里的所有内容，checkout不会覆盖working directory中修改过且没有git add的文件．
+
+2. reset 把branch移动到HEAD指向的地方，checkout把HEAD移动到另一个branch
+
+![reset or checkout](https://image-static.segmentfault.com/103/313/1033130145-57a48436a5fcd_fix732)
+
+checkout带文件参数时，`git checkout <branch> <file>`同时更新了index区域和workding directory中的file内容
 
 ### git远程链接
 
