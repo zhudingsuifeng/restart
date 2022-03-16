@@ -489,6 +489,8 @@ echo 'hello git' |git hash-object --stdin     # 获取'hello git'对应hash
 git ls-files --stage index.txt                # 显示index.txt文件对应hash
 100644 8d0e41234f24b6da002d962a26c2495ea16a425f 0       index.txt
 git cat-file -p 8d0e41234f24b6da002d962a26c2495ea16a425f   # 查看hash对应的文件内容hello git
+git cat-file -p master^{tree}                 # master分支上最新的提交所指向的树tree对象
+git cat-file -p "master^{tree}"               # zsh中^被用于通配模式，需要用""引起来
 ```
 
 `git add`将文件内容hash的blob object对象保存到.git/objects，将index保存到staging area
@@ -545,10 +547,16 @@ tree对象有一床指向blob对象或者其他tree对象的指针，他一般�
 `git show <SHA1>`命令同样可以查看tree对象，但是`git ls-tree <SHA1>`更详细．
 
 ```git
-git ls-tree <3dc1b85>
+git write-tree                 # Create a tree object from the current index
+git read-tree                  # 
+git ls-tree <3dc1b85>          # List the contents of a tree object
 
 100644 blob f2b6f80491dc889f88b436422fea7427ae1630a7    readme.md
 100644 blob 85c6d03b5bba69142904ae2cb11d7c53dd44a6e3    ttt.md
+git commit-tree <SHA1>         # 用指定的tree object to create a commit object
+echo 'first commit'|git commit-tree <SHA1>
+echo 'seccond commit'|git commit-tree <SHA1> -p <SHA1>   # -p 指定父提交
+git log --stat <SHA1>          # Generate a diffstat.
 ```
 
 tree对象包含一串条目，包括:mode,对象类型，SHA1值和文件名．
@@ -624,6 +632,8 @@ tag标签对象
 
 一个标签对象包括一个对象名(SHA1签名),对象类型，标签名，标签创建人的名字，还有可能包含签名信息．
 
+标签tag对象是一个永不移动的分支引用，永远指向同一个提交对象．
+
 ```git
 git tag v1.0                 # 创建tag,默认打在最新commit
 git tag -a v1.1 -m "tag message" <commit>
@@ -636,6 +646,29 @@ tag v1.0
 tagger zhudingsuifeng <1002557401@qq.com> 1647273270 +0800
 
 tag test
+```
+
+分支的本质是一个指向某一些列提交之首的指针或引用．
+
+HEAD文件通常是一个符号引用(symbolic reference)，指向目前所在的分支．所谓符号引用，表示它是一个指向其他引用的指针．
+
+执行`git commit`会创建一个提交commit对象，并用HEAD文件中引用所指向的SHA1值设置其父提交字段．
+
+```git
+git update-ref refs/heads/<branch> <SHA1>   # 创建分支
+git symbolic-ref HEAD                       # 查看HEAD引用对应值
+git symbolic-ref HEAD <refs/heads/test>     # 设置HEAD引用的值
+```
+
+HEAD引用，tag标签引用，远程引用(remote reference)
+
+手动执行`git gc`或者向远程服务器执行push，git会对仓库进行重新打包以节省空间．
+
+```git
+.git/objects/pack/pack-<SHA1>.idx   # 打包文件保存位置
+.git/objects/pack/pack-<SHA1>.pack
+
+git verify-pack -v .git/objects/pack/pack-<SHA1>.idx   # 查看打包内容
 ```
 
 ![git diff 不同工作区之间的比较](https://img-blog.csdnimg.cn/img_convert/e3acce52aafa2acf1406fd0fe1ce3114.png)
