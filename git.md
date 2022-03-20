@@ -121,6 +121,8 @@ git restore <file>             # 撤销(在工作空间但不在暂存区)文件
 ```git
 git commit -m "版本信息"       # 将暂存区stage/index的内容提交到版本库repository
 git commit -a -m "版本信息"    # 将已跟踪文件的修改直接提交到版本库repository
+git commit -v                  # 显示提交时所有改动diff信息，并不真的提交
+git commit --amend             # Replace the tip of the current branch by creating a new commit.将需要修改的内容git add到暂存区，--amend会修改最近一次commit，而不是新增一个commit，index中的内容也会一起commit
 git reset HEAD                 # git reset defaults to HEAD，使用HEAD覆盖暂存区index/stage内容，文件内容不受影响
 git reset --hard HEAD@{2}      # 撤销并删除相应的更新
 git reset --hard gitee/master  # 将本地主分支指向gitee/master，所有未提交commit的内容都会被丢弃掉
@@ -129,6 +131,7 @@ git reset HEAD <file>          # 指定文件file
 git checkout HEAD .            # 使用commit提交的HEAD内容覆盖工作目录和暂存区
 git checkout HEAD <file>       # 使用commit提交的HEAD内容覆盖工作目录file文件与暂存区file，会变更文件内容
 git checkout -- <file>         # 使用暂存区file覆盖工作目录file文件，已添加到暂存区index/stage的改动不会被覆盖
+git revert <SHA1>              # 回滚到指定提交commit的内容，通常会造成冲突conflict,需要解决冲突后，--continue
 ```
 
 `HEAD`可以指向分支，也可以指向提交commit，存储在.git/HEAD．当指向branch时执行commit,checkout和merge等都会导致HEAD移动，当不指向branch而指向提交commit时，HEAD会处在detached分离/游离状态．
@@ -161,9 +164,10 @@ git reset --hard ORIG_HEAD     # 可以回退到危险操作之前状态
 
 ```git
 git log                        # show commit logs
+git log --graph                # 以图形化的方式显示提交历史关系
 git blame <file>               # show what reision and author last modified each line of a line.按文件查看历史记录
 git log --oneline --graph --all   # 以图的方式显示分支历史
-git reflog　　　　　　　　　　 # 显示HEAD移动历史
+git reflog　　　　　　　　　　 # 显示HEAD移动历史，查看分支日志
 git reflog --online            # 以简介的方式显示HEAD变动历史(每一行代表一次移动)
 git checkout fed2b51(sha-1值)  # 将当前位置切换为某次提交
 git branch -a 
@@ -231,6 +235,8 @@ git fetch gitee <master>:<dev>   # 获取远程库gitee的master分支到本地d
 
 与工作区域相对应的就是文件状态，文件状态的转变也就意味着文件在工作区域中的移动．
 
+`git status <file>`用于查看file文件当前状态．
+
 ![file status](https://git-scm.com/book/en/v2/book/02-git-basics/images/lifecycle.png)
 
 - 未跟踪(untracked)，文件在文件夹中，但是并没有加入到git库，不参与版本控制．通过`git add`状态变为stage.
@@ -241,11 +247,15 @@ git fetch gitee <master>:<dev>   # 获取远程库gitee的master分支到本地d
 
 - 已暂存(staged)表示对已修改文件的当前版本做了标记，使之包含在下次提交中．执行`git commit`则将修改同步到库中，这时库中的文件和本地文件又变为一致，文件为unmodify状态．执行`git reset HEAD <file>`则取消暂存，文件状态变为modified.
 
+`git rm --cached <file>`直接从暂存区删除文件，工作去不做改变，文件状态变为untracked
+
 ![change file status](https://images2017.cnblogs.com/blog/63651/201709/63651-20170909091456335-1787774607.jpg)
 
 ### 分支管理
 
 分支使用来隔离不同开发路径的方式，创建仓库时，master是本地仓库默认分支．通常是在其他(dev)分支上开发，完成后再将功能分支合并到主分支上．
+
+git分支本质上是指向提交对象commit object的可变指针，默认分支是master，多次提交后，得到指向最后提交对象的master分支。master分支会在每次提交时自动向前移动。HEAD是指向分支(指针)的指针，随分支移动。
 
 ![git tree](https://www.runoob.com/manual/git-guide/img/branches.png)
 
@@ -253,6 +263,7 @@ git fetch gitee <master>:<dev>   # 获取远程库gitee的master分支到本地d
 git branch               # 列出本地分支
 git branch -r            # 列出远程分支
 git branch -a            # 列出所有分支
+git branch -v            # --verbose show shaq and commit subject line for each head, along with relationship to upstream branch.
 git branch dev           # 创建分支dev
 git branch dev <commit>  # 创建分支dev指向特定commit快照
 git branch --track <branch> <remote-branch>   # 创建分支并与制定的远程分支建立追踪关系
@@ -268,10 +279,33 @@ git cherry-pick <commit> # 选择一个提交commit，合并进当前分支
 git merge dev --no-ff -m "merge with no-ff" dev   # --no-ff禁用Fast forward模式，-m合并时产生一个新commit.
 git branch -d dev        # 删掉dev分支
 git push gitee --delete <branch>   # 删除远程分支
-git branch -dr <remote/branch>
+git branch -dr <remote/branch>     # 同上
 git push gitee dev       # 如果不把dev分支推送到远程仓库gitee，dev分支就是本地私有的，对其他人是未知的
 git rebase               # Reapply commits on top of another base tip
 ```
+
+![branch分叉](http://gitbook.liuhui998.com/assets/images/figure/rebase1.png)
+
+git提交分叉后，可以用pull命令将分支上的修改拉下来并且与当前修改合并，结果看起来就像一个新的"合并提交"(merge commit).
+
+![git pull merge commit](http://gitbook.liuhui998.com/assets/images/figure/rebase2.png)
+
+如果想让mywork分支历史看起来像是没经过合并，是线性到当前的，可以使用`git rebase`.可以将mywork分支里的提交commit保存为补丁patch存储到.git/rebase目录，然后将mywork分支更新到最新的origin分支，并把补丁应用到mywork分支上，原来的mywork分支里的commit将变为分离的。
+
+```git 
+git switch mywork
+git rebase origin
+git rebase --continue   # 解决完冲突后继续提交commit
+git rebase --abort      # 终止当前的rebase
+```
+
+![git rebase](http://gitbook.liuhui998.com/assets/images/figure/rebase3.png)
+
+使用`git gc`垃圾收集命令，那些被丢弃的(detached)的提交就会被删除。
+
+![git gc](http://gitbook.liuhui998.com/assets/images/figure/rebase4.png)
+
+
 
 每次提交，git都把他们串成一条时间线，这条时间先就是一个分支．git默认分支master叫做主分支．HEAD不是指向提交，而是指向master，master才是指向提交，HEAD指向的是当前分支．
 
@@ -371,6 +405,8 @@ git push <gitee>:refs/tags/<tagname>   # 删除远程标签，需要先删除本
 git blame <file>         # 按照文件查看commit提交记录
 ```
 
+![git_diff](https://images2017.cnblogs.com/blog/63651/201709/63651-20170914095506203-2063795525.png)
+
 ### git常用
 
 ```git
@@ -383,10 +419,11 @@ git whatchanged <file>                # 比git log --follow <file> 信息更丰�
 git blame <file>                      # 显示用户对指定文件的修改记录
 git shortlog                          # 显示提交过的用户和用户commit message
 git ls-files --stage                  # 查看index文件内容100644普通文件644权限
-
 git diff                              # 显示暂存区和工作区的差异
 git diff --cached <file>              # 显示暂存区和上一个commit的差异
 git diff HEAD                         # 显示工作区与当前分支最新commit之间的差异
+git diff master..dev                  # 显示两个分支之间的差异
+git diff master...dev                 # 显示master与dev共有父分支与dev分支之间的差异
 git diff
 
 diff --git a/ttt.md b/ttt.md          # 第一行表示a版本的ttt.md(变动前)与b版本的ttt.md(变动后)比较．
@@ -468,16 +505,46 @@ git restore <file>                    # retore <file> from the index，用index�
 git restore --staged <file>           # To restore a <file> in the index to match the version in HEAD，用master中commit的内容恢复index
 git restore --source=HEAD --staged --worktree <file>   # both the index and the working tree用master中commit同时恢复index和workding tree
 git restore --source master~2 <file>  # 使用指定commit的内容恢复working tree
+git ls-files                          # Show cached files in the output(default).查看所有缓存文件，只显示文件名
+git ls-files -o                       # --others Show other files in the output，查看未被跟踪的文件
+git ls-files -s                       # --stage Show staged contents' mode bits, object name and stage number in the output.
+git ls-files -m                       # --modified Show modified files in the output.
+git ls-files -d                       # --deleted Show deleted files in the output.
+rm <file>                             # remove untracked file
+git rm <file>                         # remove tracked file
+git rm -f <file>                      # --force Override the up-to-date check.
+git rm --cached <file>                # 删除暂存区的文件，不删除工作区的文件
+git reset HEAD <file>                 # the same as pre
+```
+
+假设master分支目前在提交(commit):'980e3'上，把他推送(push)到gitee上并命名标签'v1.0'，则如下引用等价
+
+```git
+980e3
+HEAD 
+master
+gitee/master
+refs/remotes/gitee/master
+refs/heads/master
+v1.0
+refs/tags/v1.0
+```
+
+### git grep 搜索
+
+```git
+git grep check                        # 在working space文件中搜索check 
+git grep -n check                     # 显示行号
+git grep --name-only check            # 只显示文件名，不显示具体内容
+git grep -c check                     # 显示文件名和每个文件中匹配行数
+git grep check <ref>                  # 在指定版本里搜索
 ```
 
 ### git内部原理
 
 ```git
-
 git rev-list            # Lists commit objects in reverse chronalogical order 
 git cat-file            # Provide content or type and size information for repository objects
-
-
 ```
 
 ### git对象
@@ -665,6 +732,8 @@ HEAD引用，tag标签引用，远程引用(remote reference)
 手动执行`git gc`或者向远程服务器执行push，git会对仓库进行重新打包以节省空间．
 
 ```git
+git gc          # 清理空间
+git fsck        # 仓库一致性检查，主要是悬空对象(dangling objects)，有时是找回丢失内容的最后希望
 .git/objects/pack/pack-<SHA1>.idx   # 打包文件保存位置
 .git/objects/pack/pack-<SHA1>.pack
 
@@ -674,6 +743,16 @@ git verify-pack -v .git/objects/pack/pack-<SHA1>.idx   # 查看打包内容
 ![git diff 不同工作区之间的比较](https://img-blog.csdnimg.cn/img_convert/e3acce52aafa2acf1406fd0fe1ce3114.png)
 
 #### reset/revert/checkout/fetch/pull
+
+`git revert`会改变分支记录，因为产生了新的提交。
+
+`git restore`不会影响分支记录。
+
+`git revert` is about making a new commit that reverts the changes made by other commit.
+
+`git restore` is about restoring files in the working tree from either the index or another commit. This command does not update your branch. The command can also be used to restore files in the index from another commit.
+
+`git reset` is about updating your branch, moving the tip in order to add or remove commits from the branch. This operation changes the commit history.
 
 修改了workding directory里的文件，git会发现working directory的内容和index的内容不一致．
 `git status`  # Changes not staged for commit
@@ -718,7 +797,7 @@ git reset <file>                # 等效
 git reset <hash> <file>         # 将index内文件恢复到指定版本，可以直接commit
 ```
 
-checkout与reset --hard作用相似，但有以下不同
+checkout与reset --hard都不带文件参数时作用相似，但有以下不同
 
 1. reset 会覆盖workding directory里的所有内容，checkout不会覆盖working directory中修改过且没有git add的文件．
 
@@ -727,6 +806,106 @@ checkout与reset --hard作用相似，但有以下不同
 ![reset or checkout](https://image-static.segmentfault.com/103/313/1033130145-57a48436a5fcd_fix732)
 
 checkout带文件参数时，`git checkout <branch> <file>`同时更新了index区域和workding directory中的file内容
+
+```git
+git checkout .                  # 用暂存区所有内容替换工作区文件
+git checkout -- .               # same as git checkout . --指代暂存区index/stage
+git checkout <file>             # overwrite working tree with the contents in the index
+git checkout -- <file>          # if you want to checkout these file out of the index.
+git checkout <branch> -- <file> # 维持HEAD指向不变，用branch所指向的提交中file替换暂存区和工作区中的文件
+git checkout HEAD .             # 用HEAD指向的master分支全部文件替换工作目录文件内容，如果文件是新建的，master分支中没有则不会被替换
+git checkout HEAD <file>        # 指定文件
+git checkout                    # 汇总显示工作区，暂存区与HEAD的差别
+git checkout HEAD               # same as git checkout
+```
+
+### 不同场景下的回退
+
+- 工作区中未添加到暂存区和版本库的文件，执行`git add`操作，将文件添加到index/stage，回退index内容
+
+```git
+git init
+echo 'init'>>readme.md
+git add readme.md
+git rm --cached <file>          # 将文件从暂存区移除，但是工作区没有消失
+git add readme.md
+git restore --staged readme.md  # 没有分支被创建,HEAD没有指向的时候不起作用
+git add readme.md
+git reset HEAD readme.md        # 没有分支被创建,HEAD没有指向的时候不起作用
+```
+
+`git restore --staged <file>`和`git reset HEAD <file>`不能是整个版本库的第一个文件，因为这两个命令都是依赖HEAD指针的，此时只是执行了`git init`初始化仓库，`git add <file>`将文件添加到index/stage暂存区中，通过`git branch -a`可以看到此时还没有任何分支被创建，`git reflog --oneline`也找不到HEAD。当`git commit -m 'init'`后，默认master分支被创建，HEAD指向master分支。
+
+git restore Restore working tree fiels 
+
+Restore specified paths in the working tree with some contents from a restore source. If a path is tracked but does not exist in the restore source, it witll be removed to match the sorce.
+
+The command can alse be used to restore the content in the index with `--staged`, or restore both the workding tree and the index with `--staged --worktree`.
+
+By default, if `--staged` is given, the contents are restored from HEAD, otherwise from the index. Use `--source` to restore from a different commit.
+
+- 版本库中的文件，修改或者删除后未执行`git add`操作，只是对工作区workding space做了修改，回退index和worktree内容，主要是回退workging tree 工作目录内容
+
+```git
+echo 'remove file'>>readme.md
+git rm <file>                   # 将文件从工作区和暂存区同时删除文件
+git rm <file>                   # 文件在index索引中有变更，使用--cached 保留本地文件，使用-f 强制删除index和working tree中内容
+git restore readme.md           # 使用暂存区stage/index中文件替换工作区指定文件，文件回退
+git checkout -- <file>          # 使用暂存区stage/index中文件替换工作区指定文件，文件回退
+git checkout HEAD <file>        # 使用HEAD指向最新commit的内容同时替换inedx/stage和working space内容
+git checkout                    # 汇总显示工作区，暂存区与HEAD的差别，只关注与HEAD的区别，而不关注是工作区还是暂存区
+git checkout HEAD               # 汇总显示工作区，暂存区与HEAD的差别，只关注与HEAD的区别，而不关注是工作区还是暂存区
+git reset --hard HEAD           # 使用HEAD指向最新commit的内容同时替换inedx/stage和working space内容
+```
+
+- 版本库中的文件，修改或删除后执行了`git add`操作，文件已添加到index/stage，回退stage内容
+
+```git
+git restore --staged <file>     # 使用repository版本库中的文件覆盖暂存区的数据
+git reset HEAD <file>           # reset 指定文件只能是--mixed，即使用指定commit的内容替换HEAD和stage内容，而working space内容不变
+git hash-object <file>          # 获取工作区workding directory文件hash值
+git ls-files -s <file>          # --stage 获取stage/index中文件hash值 Show staged contents' mode bits, object name and stage number in the output.
+git ls-files -c <file>          # --cached Show cached files(name) in the output (default)
+git restore --staged <file>     # 是文件的替换，效果是不管git add多少次，一次restore --staged回到解放前
+git rm --cached <file>          # 一次rm --cached对应一次git add，多次add需要多次回退才能回到最初状态
+```
+
+- 版本库中的文件，修改或删除后执行了`git add`,`git commit`操作，文件已添加到index并且提交到repository
+
+`git commit`命令执行后就形成了历史，叫做提交日志，想要回退就得有篡改历史的能力，`git reset HEAD^`提供了把本地文件反向修改，然后再次提交的能力。
+
+`git reset`不带文件参数可以有--soft,--mixed,--hard三种选项，--soft只影响HEAD，--mixed影响HEAD和index,--hard影响HEAD,index和工作目录worktree.
+
+```git
+git reset --soft HEAD~1         # 将HEAD回退到最新版本的前一版本，即倒数第二版本
+git reset --mixed HEAD@{1}      # 将HEAD和index回退到最新版本的前一版本，即倒数第二版本
+git reset --hard "HEAD^"        # 将HEAD,index和worktree回退到最新版本的前一版本，即倒数第二版本
+git reset --soft "HEAD^^"       # 将HEAD回退到最新版本的前二版本，即倒数第三版本
+git reset HEAD <file>           # default --mixed and only --mixed，HEAD不会移动，只会影响index/stage
+```
+
+- 版本库中的文件，修改或删除后执行了`git add`,`git commit`，`git push`操作，文件已添加到index并且提交到repository，并且推送到远程仓库push to remote repository
+
+相较于对版本库文件修改或删除之后，执行`git add, git commit`，修改内容已经推送到远程仓库，要想回退，只需要将本地仓库回退后重新推送push，因为本地回退了，所以远程仓库记录是领先于本地仓库的，这时候push会失败。Updates were rejected because the tip of your current branch is behind its remote counterpart.
+
+```git
+git push gitee master           # failed to push ref
+git push -f gitee master        # 强制推送
+```
+
+- 两次`git commit`之后产生两条日志，只还原倒数第二次提交，对最近一次提交无影响
+
+`git reset`与`git checkout`重要的区别是，`reset`会移动`HEAD`分支的指向，即`HEAD->master`同时指向其他的commit，而`checkout`只会将`HEAD`指向其他的分支如dev，master分支是不移动的。
+
+分支的本质就是指向提交对象commit object的指针，HEAD是指向分支的指针，可以认为是指针的别名。
+
+`git reset HEAD@{3}`将`HEAD->master`指向之前的第三次提交，并不是意味着中间几次提交被删除了，这几次提交还在的，reset只是移动了指针，并没有将数据删除，还可以通过`reset reset HEAD@{1}`移动回来。
+
+```git
+git reset HEAD~2                # 回退最近两次修改的所有内容,reset虽然不会删除文件，但是会篡改提交历史
+git reflog --oneline            # reflog 显示引用移动历史
+git revert HEAD@{1}             # 在倒数第二次提交的基础上直接修改，会造成冲突，解决冲突后，正常add commit就可以了
+```
 
 ### git远程链接
 
