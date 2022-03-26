@@ -8,16 +8,19 @@
 # from give links get images links and names, and save images with assign path and name              #
 ######################################################################################################
 
+# 懒加载
+# 响应超时
+# javascript动态生成
+
 import os
 import re
 import time
-# analysiing the http response
+import logging                    # 调试中间输出内容适用logging，最终面向用户的输出结果适用print()
+import requests                   # using requests replace urllib.request to get http
 from bs4 import BeautifulSoup
+from requests.adapters import HTTPAdapter
 
-# using requests replace urllib.request
-# get http
-import requests
-
+# 漫画爬虫类
 class Cartoon:
 
     def __init__(self, superUrl):
@@ -35,7 +38,8 @@ class Cartoon:
         resp = requests.get(self.url)
         res = BeautifulSoup(resp.text, 'lxml')
         # res.find(class_="view-win-list detail-list-select")
-        return res.find_all('idx')
+        # return res.find_all(href=re.compile("chapter"), target="_blank")   # 同时满足多个条件
+        return res.find_all(href=re.compile("chapter"), target="_blank").string
 
     def get_image_link(self, child_link):
         resp = requests.get(child_link)
@@ -61,8 +65,7 @@ class Cartoon:
         print("download image {link} success".format(link))
 
 if __name__ == "__main__":
-    # init a Cartoon object
-    cartoon = Cartoon("https://www.xmanhua.cc/info/toukuiquanjimoshanjian")
-    print(cartoon.get_child_link_and_name())
-    time.sleep(3)
-    print("this is a cartoon spider")
+    # 单元测试，实际应用
+    # 命令行支持
+    super_url = None
+    cartoon = Cartoon(super_url)
