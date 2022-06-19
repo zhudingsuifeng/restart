@@ -144,3 +144,12 @@ $ pacman -Qi vim   # 显示已经安装本地存储的有关vim的详细信息�
 ```
 
 有问题可以经常使用`man pacman & pacman -h`，还可以访问pacman_(简体中文)-ArchWiki
+
+### pacman-mirrors - generate pacman mirrorlist for Manjaro Linux
+
+```pacman
+pacman -Syu                        # 错误:未能同步所有数据库(软件仓库没有配置服务器信息)
+pacman-mirrors -c China -m rank    # -c 指定国家的镜像源  -m rank 按照延迟来排序
+# -c --country Creates a custom mirror pool with supplied countries.
+# -i -- interactive 交互的
+```
