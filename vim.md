@@ -20,3 +20,13 @@ set shiftwidth=4
 ```
 
 source defaults.vim
+
+### 注意vi链接的源文件是否为vim
+
+```vim
+which vi
+which vim
+ls -il vi
+ln -s vim vi     # ln -s[软连接] vim[原文件名] vi[软连接文件名]
+ln -sf vim vi    # -f 强制覆盖原文件
+```
